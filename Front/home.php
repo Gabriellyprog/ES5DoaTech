@@ -5,22 +5,22 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 include 'conexao.php'; 
 
-// 1. Busca o ÚLTIMO PEDIDO CADASTRADO (Para o banner verde)
-$sql_projeto = "SELECT p.*, u.nome AS ong_nome, u.localizacao 
-                FROM pedidos p 
-                JOIN usuarios u ON p.id_usuario = u.id 
-                WHERE p.status = 'Aberto' 
-                ORDER BY p.data_cadastro DESC LIMIT 1";
-$resultado_projeto = $conn->query($sql_projeto);
-$projeto_destaque = $resultado_projeto ? $resultado_projeto->fetch_assoc() : null;
-
-// 2. Busca as ÚLTIMAS 2 DOAÇÕES CADASTRADAS (Para a parte debaixo)
-$sql_doacoes = "SELECT d.*, u.nome AS doador_nome, u.localizacao 
+// 1. Busca a ÚLTIMA DOAÇÃO CADASTRADA (Agora para o banner verde)
+$sql_doacao_destaque = "SELECT d.*, u.nome AS doador_nome, u.localizacao 
                 FROM doacoes d 
                 JOIN usuarios u ON d.id_usuario = u.id 
                 WHERE d.status = 'Disponível' 
-                ORDER BY d.data_cadastro DESC LIMIT 2";
-$resultado_doacoes = $conn->query($sql_doacoes);
+                ORDER BY d.data_cadastro DESC LIMIT 1";
+$resultado_doacao_destaque = $conn->query($sql_doacao_destaque);
+$doacao_destaque = $resultado_doacao_destaque ? $resultado_doacao_destaque->fetch_assoc() : null;
+
+// 2. Busca os ÚLTIMOS 2 PEDIDOS CADASTRADOS (Agora para os destaques embaixo)
+$sql_pedidos = "SELECT p.*, u.nome AS ong_nome, u.localizacao 
+                FROM pedidos p 
+                JOIN usuarios u ON p.id_usuario = u.id 
+                WHERE p.status = 'Aberto' 
+                ORDER BY p.data_cadastro DESC LIMIT 2";
+$resultado_pedidos = $conn->query($sql_pedidos);
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -49,17 +49,18 @@ $resultado_doacoes = $conn->query($sql_doacoes);
         </div>
 
         <div class="banner-urgencia">
-            <?php if ($projeto_destaque): ?>
-                <h3 style="font-size: 22px; line-height: 1.4;"><?php echo htmlspecialchars($projeto_destaque['titulo']); ?></h3>
+            <?php if ($doacao_destaque): ?>
+                <h3 style="font-size: 22px; line-height: 1.4;"><?php echo htmlspecialchars($doacao_destaque['titulo']); ?></h3>
+                <p style="color: #ffffff; font-size: 14px; margin-bottom: 15px; opacity: 0.9;">Ofertado por: <?php echo htmlspecialchars($doacao_destaque['doador_nome']); ?></p>
                 <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-                    <span style="color: #4ade80; font-weight: bold; font-size: 13px;">DESTAQUES</span>
-                    <a href="projetos.php?busca=<?php echo urlencode($projeto_destaque['titulo']); ?>" class="btn-link-ajudar">Ajudar agora</a>
+                    <span style="color: #4ade80; font-weight: bold; font-size: 13px;">ITEM DISPONÍVEL</span>
+                    <a href="perfil.php?aba=mensagens&contato_id=<?php echo $doacao_destaque['id_usuario']; ?>&nome_contato=<?php echo urlencode($doacao_destaque['doador_nome']); ?>" class="btn-link-ajudar">Quero este item</a>
                 </div>
             <?php else: ?>
-                <h3 style="font-size: 22px; line-height: 1.4;">Nenhum projeto urgente no momento</h3>
+                <h3 style="font-size: 22px; line-height: 1.4;">Nenhuma doação no momento</h3>
                 <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-                    <span style="color: #4ade80; font-weight: bold; font-size: 13px;">DESTAQUES</span>
-                    <a href="projetos.php" class="btn-link-ajudar">Ver projetos</a>
+                    <span style="color: #4ade80; font-weight: bold; font-size: 13px;">NOVIDADES</span>
+                    <a href="doar.php" class="btn-link-ajudar">Faça uma doação</a>
                 </div>
             <?php endif; ?>
         </div>
@@ -100,31 +101,32 @@ $resultado_doacoes = $conn->query($sql_doacoes);
 
     <section class="destaques-area">
         <h2 style="font-size: 22px; margin-bottom: 30px;">
-            DESTAQUES <span style="color: var(--neon-blue);">DE DOAÇÕES</span>
+            DESTAQUES <span style="color: var(--neon-blue);">DE PROJETOS</span>
         </h2>
 
         <div class="destaque-grid">
-            <?php if ($resultado_doacoes && $resultado_doacoes->num_rows > 0): ?>
-                <?php while($doacao = $resultado_doacoes->fetch_assoc()): 
-                    // Escolhe um ícone genérico dependendo do nome do item
-                    $icone_doacao = (stripos($doacao['titulo'], 'computador') !== false || stripos($doacao['titulo'], 'monitor') !== false) ? '💻' : '📦';
-                    if(stripos($doacao['titulo'], 'ferramenta') !== false) $icone_doacao = '🔧';
-                    if(stripos($doacao['titulo'], 'escolar') !== false || stripos($doacao['titulo'], 'livro') !== false) $icone_doacao = '📘';
+            <?php if ($resultado_pedidos && $resultado_pedidos->num_rows > 0): ?>
+                <?php while($pedido = $resultado_pedidos->fetch_assoc()): 
+                    // Escolhe um ícone genérico dependendo da categoria ou nome
+                    $icone_pedido = '🤝';
+                    if(stripos($pedido['categoria'], 'inform') !== false || stripos($pedido['titulo'], 'computador') !== false) $icone_pedido = '💻';
+                    if(stripos($pedido['categoria'], 'ferramenta') !== false) $icone_pedido = '🔧';
+                    if(stripos($pedido['categoria'], 'escolar') !== false || stripos($pedido['titulo'], 'livro') !== false) $icone_pedido = '📘';
                 ?>
                     <div class="item-card">
-                        <div class="item-icon"><?php echo $icone_doacao; ?></div>
+                        <div class="item-icon"><?php echo $icone_pedido; ?></div>
                         <div class="item-info">
-                            <strong>Doação: <?php echo htmlspecialchars($doacao['titulo']); ?></strong>
-                            <small>Disponível por <?php echo htmlspecialchars($doacao['doador_nome']); ?> em <?php echo !empty($doacao['localizacao']) ? htmlspecialchars($doacao['localizacao']) : 'Local não informado'; ?></small>
+                            <strong>Projeto: <?php echo htmlspecialchars($pedido['titulo']); ?></strong>
+                            <small>Necessidade de <?php echo htmlspecialchars($pedido['ong_nome']); ?> em <?php echo !empty($pedido['localizacao']) ? htmlspecialchars($pedido['localizacao']) : 'Local não informado'; ?></small>
                             <div class="btn-group">
-                                <a href="projetos.php?busca=<?php echo urlencode($doacao['titulo']); ?>" class="btn-green" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Demonstrar interesse</a>
+                                <a href="projetos.php?busca=<?php echo urlencode($pedido['titulo']); ?>" class="btn-green" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Ajudar Projeto</a>
                                 <button class="btn-outline">Ver Detalhes</button>
                             </div>
                         </div>
                     </div>
                 <?php endwhile; ?>
             <?php else: ?>
-                <p style="color: #94a3b8; font-size: 14px;">Nenhuma doação disponível no momento.</p>
+                <p style="color: #94a3b8; font-size: 14px;">Nenhum projeto buscando ajuda no momento.</p>
             <?php endif; ?>
         </div>
     </section>

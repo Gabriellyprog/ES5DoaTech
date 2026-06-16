@@ -169,9 +169,27 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
 
             <?php elseif ($aba == 'mensagens'): ?>
                 <?php 
-                // Verifica se o usuário veio da tela de projetos clicando no botão "Ajudar"
-                $nome_contato = isset($_GET['nome_contato']) ? htmlspecialchars($_GET['nome_contato']) : 'ONG Vida Nova';
+                $contato_id = isset($_GET['contato_id']) ? intval($_GET['contato_id']) : 0;
+                $nome_contato = isset($_GET['nome_contato']) ? htmlspecialchars($_GET['nome_contato']) : 'Selecione uma conversa';
+                
+                // Busca o histórico de mensagens entre você e o contato selecionado
+                $mensagens_chat = [];
+                if ($contato_id > 0) {
+                    $meu_id = $_SESSION['usuario_id'];
+                    $sql_msg = "SELECT * FROM mensagens 
+                                WHERE (id_remetente = ? AND id_destinatario = ?) 
+                                   OR (id_remetente = ? AND id_destinatario = ?) 
+                                ORDER BY data_envio ASC";
+                    $stmt_msg = $conn->prepare($sql_msg);
+                    $stmt_msg->bind_param("iiii", $meu_id, $contato_id, $contato_id, $meu_id);
+                    $stmt_msg->execute();
+                    $resultado_msg = $stmt_msg->get_result();
+                    while ($row = $resultado_msg->fetch_assoc()) {
+                        $mensagens_chat[] = $row;
+                    }
+                }
                 ?>
+                
                 <div class="p-messages-wrapper">
                     
                     <aside class="p-chat-sidebar">
@@ -179,13 +197,17 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                             <h2 class="p-section-title-blue" style="margin: 0; font-size: 18px;">CONVERSAS</h2>
                         </div>
                         <div class="p-chat-list">
-                            <div class="p-chat-user active">
-                                <div class="p-chat-avatar" style="background: #38bdf8; color: black;"><i class="fa-solid fa-hand-holding-heart"></i></div>
-                                <div class="p-chat-info">
-                                    <strong><?php echo $nome_contato; ?></strong>
-                                    <p>Olá! Gostaria de ajudar...</p>
+                            <?php if ($contato_id > 0): ?>
+                                <div class="p-chat-user active">
+                                    <div class="p-chat-avatar" style="background: #38bdf8; color: black;"><i class="fa-solid fa-hand-holding-heart"></i></div>
+                                    <div class="p-chat-info">
+                                        <strong><?php echo $nome_contato; ?></strong>
+                                        <p>Conversa ativa</p>
+                                    </div>
                                 </div>
-                            </div>
+                            <?php else: ?>
+                                <p style="color: #94a3b8; padding: 20px; font-size: 14px;">Inicie um chat através da página de Projetos.</p>
+                            <?php endif; ?>
                         </div>
                     </aside>
 
@@ -195,34 +217,60 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                                 <div class="p-chat-avatar-small" style="background: #38bdf8; color: black;"><i class="fa-solid fa-hand-holding-heart"></i></div>
                                 <div>
                                     <strong style="color: white; font-size: 16px; display: block;"><?php echo $nome_contato; ?></strong>
-                                    <span style="color: #4ade80; font-size: 12px;">Online agora</span>
+                                    <?php if ($contato_id > 0): ?>
+                                        <span style="color: #4ade80; font-size: 12px;">Online agora</span>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </header>
 
-                        <div class="p-chat-messages">
-                            <?php if(isset($_GET['nome_contato'])): ?>
-                                <div class="msg sent">
-                                    <p>Olá! Vi o seu projeto na plataforma e gostaria de ajudar com uma doação. Como podemos combinar?</p>
-                                    <span>Agora mesmo</span>
-                                </div>
+                        <div class="p-chat-messages" id="chat-box" style="overflow-y: auto; display: flex; flex-direction: column;">
+                            <?php if ($contato_id > 0): ?>
+                                <?php if (count($mensagens_chat) > 0): ?>
+                                    <?php foreach ($mensagens_chat as $msg): 
+                                        $classe_msg = ($msg['id_remetente'] == $_SESSION['usuario_id']) ? 'msg sent' : 'msg received';
+                                        $hora = date('H:i', strtotime($msg['data_envio']));
+                                    ?>
+                                        <div class="<?php echo $classe_msg; ?>">
+                                            <p><?php echo htmlspecialchars($msg['mensagem']); ?></p>
+                                            <span><?php echo $hora; ?></span>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <div class="msg sent" style="opacity: 0.7;">
+                                        <p>Envie a primeira mensagem para <?php echo $nome_contato; ?>!</p>
+                                    </div>
+                                <?php endif; ?>
                             <?php else: ?>
-                                <div class="msg received">
-                                    <p>Olá! Gostaria de confirmar se o equipamento já foi enviado?</p>
-                                    <span>14:20</span>
+                                <div style="text-align: center; color: #94a3b8; margin-top: auto; margin-bottom: auto;">
+                                    <i class="fa-regular fa-comments" style="font-size: 40px; margin-bottom: 10px;"></i>
+                                    <p>Selecione um contato para começar a conversar.</p>
                                 </div>
                             <?php endif; ?>
                         </div>
 
-                        <footer class="p-chat-input-area">
-                            <div class="input-wrapper">
-                                <i class="fa-solid fa-paperclip attach-icon"></i>
-                                <input type="text" placeholder="Escreva sua mensagem aqui...">
+                        <?php if ($contato_id > 0): ?>
+                        <form action="processar_mensagem.php" method="POST" style="margin: 0; padding: 20px; background: #05070a; border-top: 1px solid #1e293b; display: flex; gap: 15px; align-items: center;">
+                            <input type="hidden" name="id_destinatario" value="<?php echo $contato_id; ?>">
+                            <input type="hidden" name="nome_contato" value="<?php echo $nome_contato; ?>">
+                            
+                            <div class="input-wrapper" style="flex: 1; position: relative;">
+                                <input type="text" name="mensagem" placeholder="Escreva sua mensagem aqui..." required autocomplete="off" style="width: 100%; padding: 12px 15px; background: #161b22; border: 1px solid #1e293b; border-radius: 8px; color: white;">
                             </div>
-                            <button class="p-chat-send-btn"><i class="fa-solid fa-paper-plane"></i></button>
-                        </footer>
+                            <button type="submit" class="p-chat-send-btn" style="background: #38bdf8; border: none; width: 45px; height: 45px; border-radius: 8px; color: #05070a; cursor: pointer; transition: 0.3s;">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </form>
+                        <?php endif; ?>
                     </section>
                 </div>
+                
+                <script>
+                    var chatBox = document.getElementById("chat-box");
+                    if(chatBox){
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    }
+                </script>
                 
             <?php elseif ($aba == 'config'): ?>
                 <div class="perfil-card-box">
