@@ -1,0 +1,272 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+:root {
+    --bg-dark: #0b0e14;
+    --card-bg: #161b22;
+    --neon-blue: #38bdf8;
+    --neon-green: #32ff00;
+    --border: #30363d;
+}
+
+/* Reset e Base */
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    font-family: 'Inter', sans-serif; 
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: white;
+    overflow-x: hidden; /* Evita scroll lateral indesejado */
+}
+
+/* --- HEADER (Ocupando as extremidades) --- */
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 5%; /* Usa porcentagem para acompanhar a tela */
+    height: 90px;
+    border-bottom: 1px solid var(--border);
+    background-color: var(--bg-dark);
+    position: relative;
+    z-index: 10;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.nav-links {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 45px; /* Mais espaço entre os links */
+}
+
+.nav-links a {
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    transition: 0.3s ease;
+}
+
+.nav-links a:hover {
+    color: var(--neon-green);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.perfil-tag {
+    background: var(--neon-green);
+    color: black;
+    padding: 8px 24px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(50, 255, 0, 0.2);
+}
+
+/* --- CONTAINER PRINCIPAL (Largo e Espaçado) --- */
+.container {
+    width: 90%;          /* Ocupa 90% da largura da tela */
+    max-width: 1600px;   /* Não deixa ficar bizarramente largo em telas 4K */
+    margin: 50px auto;   /* Centraliza o bloco de 90% */
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Duas colunas iguais */
+    gap: 80px;           /* Grande espaço entre as colunas do Figma */
+}
+
+h2 { 
+    font-size: 26px; 
+    margin-bottom: 30px; 
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* --- CARDS E ELEMENTOS --- */
+.dark-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 35px;
+    margin-bottom: 35px;
+    width: 100%;
+}
+
+.progress-container {
+    background: #21262d;
+    height: 16px;
+    border-radius: 50px;
+    margin-top: 20px;
+    position: relative;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--neon-green), var(--neon-blue));
+    border-radius: 50px;
+}
+
+/* Banner de Urgência */
+.banner-urgencia {
+    background: linear-gradient(135deg, #0d4b61 0%, #166534 100%);
+    border-radius: 22px;
+    padding: 45px;
+    min-height: 240px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.btn-ajudar {
+    align-self: flex-end;
+    background: #4ade80;
+    color: white;
+    border: none;
+    padding: 14px 35px;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-ajudar:hover { transform: scale(1.05); }
+
+/* --- SEÇÃO DE DESTAQUES (AJUSTADA AO FIGMA) --- */
+.destaques-area {
+    grid-column: span 2; /* Ocupa a largura total das duas colunas */
+    margin-top: 50px;
+}
+
+.destaques-area h2 {
+    font-size: 22px;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+.destaque-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dois cards por linha */
+    gap: 30px;
+}
+
+.item-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 16px;
+    display: flex;
+    align-items: flex-start; /* Alinha o ícone no topo do texto */
+    gap: 25px;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.item-card:hover {
+    border-color: #484f58;
+    transform: translateY(-5px);
+}
+
+.item-icon {
+    font-size: 40px;
+    min-width: 50px;
+    display: flex;
+    justify-content: center;
+    filter: drop-shadow(0 0 8px rgba(255,255,255,0.1));
+}
+
+.item-info {
+    flex: 1;
+}
+
+.item-info strong {
+    display: block;
+    font-size: 18px;
+    color: white;
+    margin-bottom: 6px;
+}
+
+.item-info small {
+    display: block;
+    color: #94a3b8;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+/* --- GRUPO DE BOTÕES (LADO A LADO) --- */
+.btn-group {
+    display: flex;
+    gap: 12px; /* Espaço entre os dois botões */
+}
+
+/* Botão Principal (Verde Neon) */
+.btn-green {
+    background: var(--neon-blue);
+    color: black;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-green:hover {
+    background: #0076d6;
+    box-shadow: 0 0 15px rgba(50, 255, 0, 0.4);
+}
+
+/* Botão Secundário (Outline/Vazado igual ao Figma) */
+.btn-outline {
+    background: transparent;
+    color: white;
+    border: 1px solid #484f58;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-outline:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #8b949e;
+}
+
+/* Botão "Ajudar agora" em formato de Link */
+.btn-link-ajudar {
+    display: inline-block;
+    background-color: #4ade80; /* Verde Neon */
+    color: #05070a; /* Texto escuro para dar contraste */
+    padding: 12px 28px;
+    border-radius: 25px;
+    text-decoration: none; /* Tira o sublinhado */
+    font-weight: 700;
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-link-ajudar:hover {
+    transform: translateY(-3px); /* Dá uma levantadinha */
+    box-shadow: 0 5px 15px rgba(56, 189, 248, 0.4); /* Sombra brilhante */
+}

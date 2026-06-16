@@ -1,0 +1,177 @@
+/* ========================================== */
+/* ESTILOS DE LOGIN E CADASTRO                */
+/* ========================================== */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body.auth-body {
+    background-color: #05070a;
+    
+    /* 1. CYBER GRID: Cria a malha de linhas sutis no fundo */
+    background-image: 
+        linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: center center;
+    
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+    color: white;
+}
+
+/* Efeito de "Vinheta" (Escurece as bordas da tela para focar no centro) */
+body.auth-body::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(circle at center, transparent 20%, #05070a 100%);
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* 2. ANIMAÇÃO: Faz as luzes neon pulsarem suavemente */
+@keyframes pulseGlow {
+    0% { transform: scale(1); opacity: 0.4; }
+    50% { transform: scale(1.3); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 0.4; }
+}
+
+.auth-glow-1 {
+    position: absolute; top: -15%; left: -10%;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(74, 222, 128, 0.06) 0%, transparent 60%);
+    z-index: 0;
+    animation: pulseGlow 7s infinite alternate ease-in-out;
+}
+
+.auth-glow-2 {
+    position: absolute; bottom: -15%; right: -10%;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.06) 0%, transparent 60%);
+    z-index: 0;
+    animation: pulseGlow 9s infinite alternate-reverse ease-in-out;
+}
+
+/* Container de Alinhamento */
+.auth-container {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+    z-index: 10;
+    position: relative; /* Garante que fique acima dos efeitos de fundo */
+}
+
+/* 3. O QUADRO (CARD) DE DESTAQUE COM EFEITO VIDRO */
+.auth-box {
+    background-color: rgba(22, 27, 34, 0.7); /* Cinza levemente transparente */
+    backdrop-filter: blur(16px); /* Efeito de vidro (desfoca o que está atrás) */
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(48, 54, 61, 0.8);
+    border-top: 1px solid rgba(255, 255, 255, 0.1); /* Brilho sutil no topo */
+    border-radius: 24px;
+    padding: 40px 35px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5); /* Sombra mais profunda */
+}
+
+/* Logo e Título */
+.auth-logo { text-align: center; margin-bottom: 35px; }
+.auth-logo i {
+    font-size: 45px;
+    background: linear-gradient(135deg, #38bdf8, #4ade80);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+}
+.auth-logo h1 { font-size: 28px; font-weight: 700; letter-spacing: 1px; }
+
+.txt-green { color: #4ade80; }
+.txt-blue { color: #38bdf8; }
+
+/* Formulário e Inputs */
+.auth-form { display: flex; flex-direction: column; gap: 20px; }
+.input-group { position: relative; width: 100%; }
+
+.input-icon {
+    position: absolute; left: 18px; top: 50%;
+    transform: translateY(-50%);
+    color: #64748b; font-size: 16px; transition: 0.3s;
+}
+
+.input-group input {
+    width: 100%;
+    background-color: #05070a; /* Fundo mais escuro para contrastar com o quadro cinza */
+    border: 1px solid #1e293b;
+    padding: 16px 20px 16px 50px;
+    border-radius: 12px;
+    color: white; font-size: 15px; outline: none; transition: 0.3s ease;
+}
+
+.input-group input::placeholder { color: #475569; }
+
+.input-group input:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.15);
+}
+
+.input-group input:focus + .input-icon,
+.input-group input:not(:placeholder-shown) + .input-icon {
+    color: #38bdf8;
+}
+
+/* Botão Degradê */
+.auth-btn {
+    width: 100%; padding: 16px;
+    background: linear-gradient(90deg, #4ade80, #38bdf8);
+    border: none; border-radius: 25px;
+    color: #05070a; font-size: 16px; font-weight: 700;
+    cursor: pointer; transition: 0.3s; margin-top: 10px;
+}
+
+.auth-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(56, 189, 248, 0.3);
+}
+
+/* Links */
+.auth-forgot { text-align: right; margin-top: -10px; }
+.auth-forgot a { color: #38bdf8; font-size: 12px; text-decoration: none; transition: 0.2s; }
+.auth-forgot a:hover { text-decoration: underline; }
+
+.auth-footer { text-align: center; margin-top: 30px; color: #94a3b8; font-size: 13px; }
+.auth-footer a { color: #38bdf8; font-weight: bold; text-decoration: none; }
+.auth-footer a:hover { text-decoration: underline; }
+
+/* ========================================== */
+/* POP-UP DE ALERTA   */
+/* ========================================== */
+.neon-popup {
+    visibility: hidden;
+    min-width: 320px;
+    background-color: #161b22;
+    border-left: 5px solid #ef4444; /* Vermelho para erro */
+    color: #fff;
+    text-align: center;
+    border-radius: 8px;
+    padding: 16px 24px;
+    position: fixed;
+    z-index: 9999;
+    left: 50%;
+    bottom: 20px;
+    transform: translateX(-50%);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.3s ease, bottom 0.3s ease;
+}
+
+.neon-popup.show {
+    visibility: visible;
+    opacity: 1;
+    bottom: 50px; /* Sobe suavemente na animação */
+}

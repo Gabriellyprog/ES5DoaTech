@@ -1,0 +1,143 @@
+/* ========================================== */
+/* PÁGINA DE SOLICITAÇÃO DE DOAÇÕES (RECEBER) */
+/* ========================================== */
+
+body.receber-body {
+    background-color: #05070a;
+    color: white;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+}
+
+.receber-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 20px;
+}
+
+/* Cabeçalho */
+.receber-header-text { text-align: center; margin-bottom: 50px; }
+.receber-header-text h1 { font-size: 36px; margin-bottom: 15px; }
+.receber-header-text p { color: #94a3b8; font-size: 18px; }
+
+.txt-green { color: #4ade80; }
+.txt-blue { color: #38bdf8; }
+
+/* Grid e Cards */
+.receber-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr; 
+    gap: 40px;
+    align-items: start;
+}
+
+.receber-card {
+    background-color: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Formulário */
+.r-form { display: flex; flex-direction: column; gap: 25px; }
+.r-form-row { display: flex; gap: 20px; }
+.r-form-row .r-form-group { flex: 1; }
+
+.r-form-group { display: flex; flex-direction: column; gap: 8px; }
+.r-form-group label { color: #cbd5e1; font-size: 14px; font-weight: 600; }
+
+.r-form-group input, 
+.r-form-group select, 
+.r-form-group textarea {
+    background-color: #05070a;
+    border: 1px solid #1e293b;
+    padding: 15px 20px;
+    border-radius: 12px;
+    color: white;
+    font-size: 15px;
+    outline: none;
+    transition: 0.3s ease;
+    font-family: inherit;
+}
+
+.r-form-group input:focus, 
+.r-form-group select:focus, 
+.r-form-group textarea:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
+}
+
+/* Área de Upload (Azul) */
+.r-upload-area {
+    position: relative;
+    background-color: rgba(56, 189, 248, 0.02);
+    border: 2px dashed #30363d;
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    transition: 0.3s;
+    cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+}
+
+.r-upload-area:hover { border-color: #38bdf8; background-color: rgba(56, 189, 248, 0.05); }
+.r-upload-area i { font-size: 40px; color: #38bdf8; }
+.r-upload-area span { font-size: 16px; color: white; font-weight: bold; }
+.r-upload-area small { color: #64748b; font-size: 12px; }
+
+.r-upload-area input[type="file"] {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    opacity: 0; cursor: pointer;
+}
+
+/* Botão de Envio (Destaque Azul) */
+.r-form-actions { margin-top: 15px; text-align: right; border-top: 1px solid #1e293b; padding-top: 25px; }
+
+.r-btn-submit {
+    background: linear-gradient(90deg, #38bdf8, #4ade80); /* Invertido para começar no azul */
+    color: #05070a;
+    border: none;
+    padding: 16px 35px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+    display: inline-flex; align-items: center; gap: 10px;
+}
+
+.r-btn-submit:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.3);
+}
+
+/* --- LADO DIREITO: INFORMAÇÕES --- */
+.r-step-list { display: flex; flex-direction: column; gap: 25px; margin-bottom: 40px; }
+.r-step-item { display: flex; gap: 15px; align-items: flex-start; }
+
+.r-step-icon {
+    width: 40px; height: 40px;
+    background: rgba(56, 189, 248, 0.1); /* Fundo azulzinho */
+    color: #38bdf8; /* Ícone azul */
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.r-step-text strong { display: block; color: white; font-size: 16px; margin-bottom: 5px; }
+.r-step-text p { color: #94a3b8; font-size: 13px; line-height: 1.5; margin: 0; }
+
+/* Caixa de Segurança */
+.r-security-box {
+    background: rgba(74, 222, 128, 0.05); /* Fundo verde */
+    border: 1px solid rgba(74, 222, 128, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex; gap: 15px; align-items: center;
+}
+
+.r-security-box i { font-size: 24px; color: #4ade80; }
+.r-security-box p { color: #cbd5e1; font-size: 12px; margin: 0; line-height: 1.5; }
