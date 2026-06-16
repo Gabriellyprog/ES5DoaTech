@@ -1,3 +1,29 @@
+<?php 
+// Inicia a sessão e protege a página: se não estiver logado, manda para o login
+session_start();
+if (!isset($_SESSION['usuario_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+include('conexao.php'); 
+
+// 1. Busca os dados atualizados do usuário logado
+$id_usuario = $_SESSION['usuario_id'];
+$query_user = $conn->prepare("SELECT nome, email, telefone, localizacao, foto FROM usuarios WHERE id = ?");
+$query_user->bind_param("i", $id_usuario);
+$query_user->execute();
+$dados_usuario = $query_user->get_result()->fetch_assoc();
+
+// 2. Busca a quantidade real de doações que este usuário já fez
+$query_count = $conn->prepare("SELECT COUNT(*) as total FROM doacoes WHERE id_usuario = ?");
+$query_count->bind_param("i", $id_usuario);
+$query_count->execute();
+$total_doacoes = $query_count->get_result()->fetch_assoc()['total'];
+
+// Lógica para definir qual aba está ativa na navegação
+$aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -9,17 +35,17 @@
 </head>
 <body class="perfil-body-layout">
 
-    <?php 
-    include('header.php'); 
-    // Lógica para definir qual aba está ativa
-    $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
-    ?>
+    <?php include('header.php'); ?>
 
     <div class="perfil-wrapper">
         <aside class="perfil-sidebar">
             <div class="perfil-user-header">
-                <div class="perfil-avatar-frame"></div>
-                <h3>Nome Usuario</h3>
+                <div class="perfil-avatar-frame" style="background-image: url('uploads/<?php echo !empty($dados_usuario['foto']) ? $dados_usuario['foto'] : 'default.png'; ?>'); background-size: cover; background-position: center;">
+                    <?php if(empty($dados_usuario['foto'])): ?>
+                        <i class="fa-solid fa-user" style="font-size: 40px; color: #64748b;"></i>
+                    <?php endif; ?>
+                </div>
+                <h3><?php echo htmlspecialchars($dados_usuario['nome']); ?></h3>
                 <p class="p-status">Doador Ativo</p>
                 <p class="p-status-sub">(Status)</p>
             </div>
@@ -55,12 +81,12 @@
                     <div class="p-stats-grid">
                         <div class="p-stat-box">
                             <span class="p-label">Doações Realizadas</span>
-                            <p class="p-val-green">25</p>
+                            <p class="p-val-green"><?php echo $total_doacoes; ?></p>
                         </div>
                         <div class="p-v-line"></div>
                         <div class="p-stat-box">
                             <span class="p-label">Vidas Impactadas</span>
-                            <p class="p-val-blue">89</p>
+                            <p class="p-val-blue"><?php echo $total_doacoes * 4; // Simulação de impacto ?></p>
                         </div>
                         <div class="p-v-line"></div>
                         <div class="p-stat-box">
@@ -75,27 +101,23 @@
                         <h2 class="p-section-title-blue">Informações Pessoais</h2>
                         <div class="p-data-field">
                             <label>Nome</label>
-                            <p>Nome do Usuário</p>
+                            <p><?php echo htmlspecialchars($dados_usuario['nome']); ?></p>
                         </div>
                         <div class="p-data-field">
                             <label>Email</label>
-                            <p>usuario@email.com</p>
+                            <p><?php echo htmlspecialchars($dados_usuario['email']); ?></p>
                         </div>
                     </div>
 
                     <div class="perfil-card-box">
-                        <h2 class="p-section-title-green">Doador Principal</h2>
-                        <div class="p-data-field">
-                            <label>Nome</label>
-                            <p>Nome Sobrenome</p>
-                        </div>
+                        <h2 class="p-section-title-green">Dados de Contato</h2>
                         <div class="p-data-field">
                             <label>Telefone</label>
-                            <p>(11) 123456789</p>
+                            <p><?php echo !empty($dados_usuario['telefone']) ? htmlspecialchars($dados_usuario['telefone']) : 'Não informado'; ?></p>
                         </div>
                         <div class="p-data-field">
                             <label>Localização</label>
-                            <p>Rua 123</p>
+                            <p><?php echo !empty($dados_usuario['localizacao']) ? htmlspecialchars($dados_usuario['localizacao']) : 'Não informada'; ?></p>
                         </div>
                     </div>
                 </div>
@@ -107,53 +129,44 @@
                     </div>
 
                     <div class="p-donation-list">
-                        <div class="p-donation-row">
-                            <div class="p-donation-info">
-                                <span class="p-donation-icon">🔧</span>
-                                <div>
-                                    <strong class="p-donation-item">Kit de Ferramentas Pro</strong>
-                                    <span class="p-donation-dest">Destino: ONG Salvador</span>
-                                </div>
-                            </div>
-                            <div class="p-donation-status-container">
-                                <span class="p-status-badge badge-green">CONCLUÍDO</span>
-                                <p class="p-donation-date">12 Jan 2026</p>
-                            </div>
-                        </div>
+                        <?php
+                        // Puxa as doações reais feitas por este usuário do banco de dados
+                        $query_doacoes = $conn->prepare("SELECT titulo, status, DATE_FORMAT(data_cadastro, '%d %b %Y') as data_formatada FROM doacoes WHERE id_usuario = ? ORDER BY id DESC");
+                        $query_doacoes->bind_param("i", $id_usuario);
+                        $query_doacoes->execute();
+                        $lista_doacoes = $query_doacoes->get_result();
 
-                        <div class="p-donation-row">
-                            <div class="p-donation-info">
-                                <span class="p-donation-icon">💻</span>
-                                <div>
-                                    <strong class="p-donation-item">Monitor LED 24'</strong>
-                                    <span class="p-donation-dest">Destino: Escola Técnica SP</span>
+                        if ($lista_doacoes->num_rows > 0):
+                            while($doacao = $lista_doacoes->fetch_assoc()):
+                                // Define a cor da badge dinamicamente dependendo do status
+                                $badge_class = 'badge-gray';
+                                if($doacao['status'] == 'Concluído') $badge_class = 'badge-green';
+                                if($doacao['status'] == 'Em trânsito') $badge_class = 'badge-blue';
+                        ?>
+                            <div class="p-donation-row">
+                                <div class="p-donation-info">
+                                    <span class="p-donation-icon">📦</span>
+                                    <div>
+                                        <strong class="p-donation-item"><?php echo htmlspecialchars($doacao['titulo']); ?></strong>
+                                        <span class="p-donation-dest">Plataforma DoaTech</span>
+                                    </div>
+                                </div>
+                                <div class="p-donation-status-container">
+                                    <span class="p-status-badge <?php echo $badge_class; ?>"><?php echo strtoupper($doacao['status']); ?></span>
+                                    <p class="p-donation-date"><?php echo $doacao['data_formatada']; ?></p>
                                 </div>
                             </div>
-                            <div class="p-donation-status-container">
-                                <span class="p-status-badge badge-blue">EM TRÂNSITO</span>
-                                <p class="p-donation-date">08 Jan 2026</p>
-                            </div>
-                        </div>
-
-                        <div class="p-donation-row">
-                            <div class="p-donation-info">
-                                <span class="p-donation-icon">📚</span>
-                                <div>
-                                    <strong class="p-donation-item">Material Escolar</strong>
-                                    <span class="p-donation-dest">Destino: Biblioteca Comunitária</span>
-                                </div>
-                            </div>
-                            <div class="p-donation-status-container">
-                                <span class="p-status-badge badge-gray">AGUARDANDO COLETA</span>
-                                <p class="p-donation-date">05 Jan 2026</p>
-                            </div>
-                        </div>
+                        <?php 
+                            endwhile;
+                        else: 
+                        ?>
+                            <p style="color: #64748b; text-align: center; padding: 20px;">Você ainda não cadastrou nenhuma doação.</p>
+                        <?php endif; ?>
                     </div>
                 </div>
 
             <?php elseif ($aba == 'mensagens'): ?>
                 <div class="p-messages-wrapper">
-                    
                     <aside class="p-chat-sidebar">
                         <div class="p-chat-sidebar-header">
                             <h2 class="p-section-title-blue" style="margin: 0; font-size: 18px;">CONVERSAS</h2>
@@ -164,13 +177,6 @@
                                 <div class="p-chat-info">
                                     <strong>ONG Vida Nova</strong>
                                     <p>Olá! O kit chegou...</p>
-                                </div>
-                            </div>
-                            <div class="p-chat-user">
-                                <div class="p-chat-avatar" style="background: #4ade80; color: black;"><i class="fa-solid fa-school"></i></div>
-                                <div class="p-chat-info">
-                                    <strong>Escola Técnica SP</strong>
-                                    <p>Obrigado pela doação!</p>
                                 </div>
                             </div>
                         </div>
@@ -185,24 +191,13 @@
                                     <span style="color: #4ade80; font-size: 12px;">Online agora</span>
                                 </div>
                             </div>
-                            <i class="fa-solid fa-ellipsis-vertical" style="color: #94a3b8; cursor: pointer; font-size: 20px;"></i>
                         </header>
-
                         <div class="p-chat-messages">
                             <div class="msg received">
-                                <p>Olá, Nome Usuario! Gostaria de confirmar se o Kit de Ferramentas já foi enviado?</p>
+                                <p>Olá! Gostaria de confirmar se o equipamento já foi enviado?</p>
                                 <span>14:20</span>
                             </div>
-                            <div class="msg sent">
-                                <p>Olá! Sim, foi enviado hoje pela manhã. O código de rastreio está no seu painel.</p>
-                                <span>14:25</span>
-                            </div>
-                            <div class="msg received">
-                                <p>Perfeito! Muito obrigado pela generosidade. Vai ajudar muito nossas oficinas.</p>
-                                <span>14:30</span>
-                            </div>
                         </div>
-
                         <footer class="p-chat-input-area">
                             <div class="input-wrapper">
                                 <i class="fa-solid fa-paperclip attach-icon"></i>
@@ -217,50 +212,49 @@
                 <div class="perfil-card-box">
                     <h2 class="p-section-title-blue">Configurações da Conta</h2>
 
-                    <div class="p-settings-avatar-section">
-                        <div class="p-settings-avatar">
-                            <i class="fa-solid fa-camera"></i>
-                        </div>
-                        <div class="p-settings-avatar-actions">
-                            <h3 style="color: white; font-size: 16px; margin-bottom: 8px;">Sua Foto de Perfil</h3>
-                            <div style="display: flex; gap: 10px;">
-                                <button class="p-btn-outline"><i class="fa-solid fa-upload"></i> Trocar Foto</button>
-                                <button class="p-btn-text"><i class="fa-solid fa-trash"></i> Remover</button>
+                    <form action="processar_config.php" method="POST" enctype="multipart/form-data" class="p-settings-form">
+                        
+                        <div class="p-settings-avatar-section">
+                            <div class="p-settings-avatar" style="background-image: url('uploads/<?php echo !empty($dados_usuario['foto']) ? $dados_usuario['foto'] : 'default.png'; ?>'); background-size: cover; background-position: center;">
+                            </div>
+                            <div class="p-settings-avatar-actions">
+                                <h3 style="color: white; font-size: 16px; margin-bottom: 8px;">Sua Foto de Perfil</h3>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="file" name="foto_perfil" id="foto_perfil" accept="image/*" style="display:none;">
+                                    <label for="foto_perfil" class="p-btn-outline" style="cursor:pointer; padding: 10px 15px; border-radius:8px;"><i class="fa-solid fa-upload"></i> Escolher Foto</label>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <form action="#" method="POST" class="p-settings-form">
                         
                         <h3 class="p-section-title-green" style="margin-top: 30px; font-size: 16px;">Dados Pessoais</h3>
                         <div class="p-form-grid">
                             <div class="p-form-group">
                                 <label>Nome Completo</label>
-                                <input type="text" value="Nome Usuario" class="p-form-input">
+                                <input type="text" name="nome" value="<?php echo htmlspecialchars($dados_usuario['nome']); ?>" class="p-form-input" required>
                             </div>
                             <div class="p-form-group">
                                 <label>Email</label>
-                                <input type="email" value="usuario@email.com" class="p-form-input">
+                                <input type="email" name="email" value="<?php echo htmlspecialchars($dados_usuario['email']); ?>" class="p-form-input" required>
                             </div>
                             <div class="p-form-group">
                                 <label>Telefone</label>
-                                <input type="text" value="(11) 123456789" class="p-form-input">
+                                <input type="text" name="telefone" value="<?php echo htmlspecialchars($dados_usuario['telefone']); ?>" class="p-form-input">
                             </div>
                             <div class="p-form-group">
                                 <label>Localização</label>
-                                <input type="text" value="Rua 123" class="p-form-input">
+                                <input type="text" name="localizacao" value="<?php echo htmlspecialchars($dados_usuario['localizacao']); ?>" class="p-form-input">
                             </div>
                         </div>
 
                         <h3 class="p-section-title-blue" style="margin-top: 40px; font-size: 16px;">Segurança</h3>
                         <div class="p-form-grid">
                             <div class="p-form-group">
-                                <label>Nova Senha</label>
-                                <input type="password" placeholder="Digite a nova senha" class="p-form-input">
+                                <label>Nova Senha (Deixe em branco para manter a atual)</label>
+                                <input type="password" name="nova_senha" placeholder="Digite a nova senha" class="p-form-input">
                             </div>
                             <div class="p-form-group">
                                 <label>Confirmar Nova Senha</label>
-                                <input type="password" placeholder="Repita a nova senha" class="p-form-input">
+                                <input type="password" name="confirma_senha" placeholder="Repita a nova senha" class="p-form-input">
                             </div>
                         </div>
 
@@ -280,7 +274,6 @@
                     </div>
 
                     <form action="#" method="POST" enctype="multipart/form-data" class="p-settings-form">
-                        
                         <h3 class="p-section-title-blue" style="font-size: 16px; margin-bottom: 15px;">Identidade Visual (Logos)</h3>
                         <div class="p-form-grid" style="margin-bottom: 30px;">
                             <div class="p-form-group">
@@ -296,43 +289,19 @@
 
                         <h3 class="p-section-title-green" style="font-size: 16px; margin-bottom: 15px;">Paleta de Cores Global</h3>
                         <div class="p-form-grid" style="margin-bottom: 30px;">
-                            
                             <div class="p-form-group">
-                                <label>Cor Primária (Atual: Verde Neon)</label>
+                                <label>Cor Primária</label>
                                 <div style="display: flex; gap: 15px; align-items: center; background: #05070a; border: 1px solid #1e293b; padding: 5px 15px; border-radius: 12px;">
                                     <input type="color" name="cor_primaria" value="#4ade80" style="width: 40px; height: 40px; border: none; background: none; cursor: pointer;">
                                     <span style="color: white; font-family: monospace;">#4ade80</span>
                                 </div>
                             </div>
-
                             <div class="p-form-group">
-                                <label>Cor Secundária (Atual: Azul Neon)</label>
+                                <label>Cor Secundária</label>
                                 <div style="display: flex; gap: 15px; align-items: center; background: #05070a; border: 1px solid #1e293b; padding: 5px 15px; border-radius: 12px;">
                                     <input type="color" name="cor_secundaria" value="#38bdf8" style="width: 40px; height: 40px; border: none; background: none; cursor: pointer;">
                                     <span style="color: white; font-family: monospace;">#38bdf8</span>
                                 </div>
-                            </div>
-
-                            <div class="p-form-group">
-                                <label>Cor de Fundo Principal</label>
-                                <div style="display: flex; gap: 15px; align-items: center; background: #05070a; border: 1px solid #1e293b; padding: 5px 15px; border-radius: 12px;">
-                                    <input type="color" name="cor_fundo" value="#05070a" style="width: 40px; height: 40px; border: none; background: none; cursor: pointer;">
-                                    <span style="color: white; font-family: monospace;">#05070a</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <h3 class="p-section-title-blue" style="font-size: 16px; margin-bottom: 15px;">Tipografia (Fontes)</h3>
-                        <div class="p-form-grid">
-                            <div class="p-form-group">
-                                <label>Fonte Principal do Sistema</label>
-                                <select name="fonte_principal" class="p-form-input" style="cursor: pointer;">
-                                    <option value="Inter" selected>Inter (Padrão Atual)</option>
-                                    <option value="Roboto">Roboto</option>
-                                    <option value="Poppins">Poppins</option>
-                                    <option value="Montserrat">Montserrat</option>
-                                    <option value="Open Sans">Open Sans</option>
-                                </select>
                             </div>
                         </div>
 
@@ -347,24 +316,19 @@
 
         </main>
     </div>
-   <script>
+
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
             const inputLogo = document.getElementById('input-logo-principal');
             const logoHeaderLink = document.getElementById('logo-header-link');
-
             if (inputLogo && logoHeaderLink) {
                 inputLogo.addEventListener('change', function(event) {
                     const file = event.target.files[0];
-                    
                     if (file) {
                         const reader = new FileReader();
-                        
                         reader.onload = function(e) {
-                            // Substitui os <span> do texto pela tag <img> da nova logo
-                            // max-height: 40px garante que a imagem não quebre o tamanho do header
-                            logoHeaderLink.innerHTML = `<img src="${e.target.result}" alt="Logo Personalizada" style="max-height: 40px; display: block; object-fit: contain;">`;
+                            logoHeaderLink.innerHTML = `<img src="${e.target.result}" alt="Logo" style="max-height: 40px; display: block; object-fit: contain;">`;
                         }
-                        
                         reader.readAsDataURL(file);
                     }
                 });
