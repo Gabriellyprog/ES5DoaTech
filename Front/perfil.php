@@ -337,7 +337,7 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                         <p style="color: #94a3b8; font-size: 14px;">Personalize a identidade visual global do sistema (Cores, Fontes e Logos).</p>
                     </div>
 
-                    <form action="#" method="POST" enctype="multipart/form-data" class="p-settings-form">
+                    <form action="processar_gerenciamento.php" method="POST" enctype="multipart/form-data" class="p-settings-form">
                         <h3 class="p-section-title-blue" style="font-size: 16px; margin-bottom: 15px;">Identidade Visual (Logos)</h3>
                         <div class="p-form-grid" style="margin-bottom: 30px;">
                             <div class="p-form-group">
@@ -369,9 +369,14 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                             </div>
                         </div>
 
-                        <div style="margin-top: 40px; text-align: right; border-top: 1px solid #1e293b; padding-top: 25px;">
+                        <div style="margin-top: 40px; display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid #1e293b; padding-top: 25px;">
+                            
+                            <a href="resetar_tema.php" onclick="return confirm('Tem certeza que deseja restaurar o tema padrão? Isso apagará a logo atual e voltará as cores originais.');" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; padding: 12px 25px; border-radius: 8px; color: #ef4444; border: 1px solid #ef4444; background: transparent; font-weight: bold; cursor: pointer; transition: 0.3s;">
+                                <i class="fa-solid fa-rotate-left" style="margin-right: 8px;"></i> Voltar de Fábrica
+                            </a>
+
                             <button type="submit" class="p-btn-save" style="background: linear-gradient(90deg, #38bdf8, #4ade80); color: #05070a; font-weight: bold; padding: 12px 25px; border-radius: 8px; border: none; cursor: pointer;">
-                                <i class="fa-solid fa-arrows-rotate"></i> Aplicar Tema Global
+                                <i class="fa-solid fa-arrows-rotate" style="margin-right: 8px;"></i> Aplicar Tema Global
                             </button>
                         </div>
                     </form>
