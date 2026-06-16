@@ -1,3 +1,33 @@
+<?php
+session_start();
+include 'conexao.php';
+
+// Verifica se veio alguma palavra chave de busca pela URL (vindo da Home ou digitado no filtro)
+$busca = isset($_GET['busca']) ? trim($_GET['busca']) : '';
+
+if (!empty($busca)) {
+    // Se houver uma busca, filtra os pedidos pelo título do item ou nome da categoria
+    $sql = "SELECT p.*, u.nome AS ong_nome, u.localizacao 
+            FROM pedidos p 
+            JOIN usuarios u ON p.id_usuario = u.id 
+            WHERE p.status = 'Aberto' AND (p.titulo LIKE ? OR p.categoria LIKE ?)
+            ORDER BY p.data_cadastro DESC";
+            
+    $stmt = $conn->prepare($sql);
+    $termo = "%" . $busca . "%";
+    $stmt->bind_param("ss", $termo, $termo);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+} else {
+    // Se não houver busca, traz todos os projetos normalmente como já estava
+    $sql = "SELECT p.*, u.nome AS ong_nome, u.localizacao 
+            FROM pedidos p 
+            JOIN usuarios u ON p.id_usuario = u.id 
+            WHERE p.status = 'Aberto'
+            ORDER BY p.data_cadastro DESC";
+    $resultado = $conn->query($sql);
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -31,81 +61,59 @@
                     <option value="ferramentas">Ferramentas</option>
                     <option value="moveis">Móveis</option>
                 </select>
-                <select class="proj-select">
-                    <option value="urgentes">Mais Urgentes</option>
-                    <option value="recentes">Mais Recentes</option>
-                    <option value="concluidos">Concluídos</option>
-                </select>
             </div>
         </div>
 
         <div class="proj-grid">
             
-            <div class="proj-card">
-                <div class="proj-badge badge-red">Urgência Alta</div>
-                <div class="proj-icon-header" style="color: #38bdf8;">
-                    <i class="fa-solid fa-computer"></i>
-                </div>
-                <h3 class="proj-title">5 Computadores para Curso de Robótica</h3>
-                <p class="proj-ong"><i class="fa-solid fa-building-ngo"></i> ONG Vida Digital - São Paulo/SP</p>
-                <p class="proj-desc">Precisamos de máquinas básicas para iniciar a turma de adolescentes no próximo mês. Monitores também são bem-vindos!</p>
-                
-                <div class="proj-progress-area">
-                    <div class="proj-progress-text">
-                        <span>Arrecadado</span>
-                        <strong>2 / 5 itens</strong>
-                    </div>
-                    <div class="proj-progress-bar">
-                        <div class="proj-progress-fill" style="width: 40%;"></div>
-                    </div>
-                </div>
-                
-                <a href="doar.php" class="proj-btn"><i class="fa-solid fa-hand-holding-heart"></i> Ajudar Projeto</a>
-            </div>
+            <?php if ($resultado->num_rows > 0): ?>
+                <?php while($projeto = $resultado->fetch_assoc()): 
+                    
+                    // Lógica para mudar a cor da etiqueta dependendo da Urgência
+                    $badge_class = 'badge-blue';
+                    $urgencia = strtolower($projeto['urgencia']);
+                    if ($urgencia == 'alta' || $urgencia == 'urgente') {
+                        $badge_class = 'badge-red';
+                    } elseif ($urgencia == 'baixa') {
+                        $badge_class = 'badge-green';
+                    }
 
-            <div class="proj-card">
-                <div class="proj-badge badge-blue">Informática</div>
-                <div class="proj-icon-header" style="color: #4ade80;">
-                    <i class="fa-solid fa-print"></i>
-                </div>
-                <h3 class="proj-title">Impressora Multifuncional</h3>
-                <p class="proj-ong"><i class="fa-solid fa-building-ngo"></i> Escola Comunitária - Rio de Janeiro/RJ</p>
-                <p class="proj-desc">Nossa impressora quebrou e precisamos imprimir as provas dos alunos. Pode ser usada, desde que funcionando.</p>
+                    // Lógica para colocar um ícone diferente dependendo da Categoria
+                    $icone = 'fa-box-open';
+                    $cor_icone = '#38bdf8';
+                    $cat = strtolower($projeto['categoria']);
+                    if (strpos($cat, 'inform') !== false) { $icone = 'fa-computer'; $cor_icone = '#38bdf8'; }
+                    elseif (strpos($cat, 'ferramenta') !== false) { $icone = 'fa-toolbox'; $cor_icone = '#94a3b8'; }
+                    elseif (strpos($cat, 'móvei') !== false || strpos($cat, 'movei') !== false) { $icone = 'fa-chair'; $cor_icone = '#4ade80'; }
+                    elseif (strpos($cat, 'escolar') !== false) { $icone = 'fa-book'; $cor_icone = '#facc15'; }
+                ?>
                 
-                <div class="proj-progress-area">
-                    <div class="proj-progress-text">
-                        <span>Arrecadado</span>
-                        <strong>0 / 1 itens</strong>
+                <div class="proj-card">
+                    <div class="proj-badge <?php echo $badge_class; ?>"><?php echo htmlspecialchars($projeto['urgencia']); ?></div>
+                    
+                    <div class="proj-icon-header" style="color: <?php echo $cor_icone; ?>;">
+                        <i class="fa-solid <?php echo $icone; ?>"></i>
                     </div>
-                    <div class="proj-progress-bar">
-                        <div class="proj-progress-fill" style="width: 0%;"></div>
-                    </div>
+                    
+                    <h3 class="proj-title"><?php echo htmlspecialchars($projeto['titulo']); ?></h3>
+                    
+                    <p class="proj-ong">
+                        <i class="fa-solid fa-building-ngo"></i> 
+                        <?php echo htmlspecialchars($projeto['ong_nome']); ?> - <?php echo !empty($projeto['localizacao']) ? htmlspecialchars($projeto['localizacao']) : 'Local não informado'; ?>
+                    </p>
+                    
+                    <p class="proj-desc"><?php echo htmlspecialchars($projeto['historia']); ?></p>
+                    
+                    <a href="perfil.php?aba=mensagens&contato_id=<?php echo $projeto['id_usuario']; ?>&nome_contato=<?php echo urlencode($projeto['ong_nome']); ?>" class="proj-btn"><i class="fa-solid fa-hand-holding-heart"></i> Ajudar Projeto</a>
                 </div>
-                
-                <a href="doar.php" class="proj-btn"><i class="fa-solid fa-hand-holding-heart"></i> Ajudar Projeto</a>
-            </div>
 
-            <div class="proj-card" style="opacity: 0.8;">
-                <div class="proj-badge badge-green">Concluído</div>
-                <div class="proj-icon-header" style="color: #94a3b8;">
-                    <i class="fa-solid fa-toolbox"></i>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <div style="grid-column: 1 / -1; text-align: center; padding: 50px 0;">
+                    <i class="fa-solid fa-folder-open" style="font-size: 40px; color: #1e293b; margin-bottom: 15px;"></i>
+                    <p style="color: #94a3b8; font-size: 18px;">Nenhuma demanda cadastrada no momento.</p>
                 </div>
-                <h3 class="proj-title">Kit de Ferramentas para Oficina</h3>
-                <p class="proj-ong"><i class="fa-solid fa-building-ngo"></i> Projeto Construir - Belo Horizonte/MG</p>
-                <p class="proj-desc">Arrecadamos todas as ferramentas necessárias para as aulas de marcenaria. Obrigado aos doadores!</p>
-                
-                <div class="proj-progress-area">
-                    <div class="proj-progress-text">
-                        <span>Arrecadado</span>
-                        <strong style="color: #4ade80;">100% Completo</strong>
-                    </div>
-                    <div class="proj-progress-bar">
-                        <div class="proj-progress-fill fill-green" style="width: 100%;"></div>
-                    </div>
-                </div>
-                
-                <button class="proj-btn" disabled style="background: #1e293b; color: #94a3b8; cursor: not-allowed;">Meta Atingida</button>
-            </div>
+            <?php endif; ?>
 
         </div>
     </main>

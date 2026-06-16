@@ -27,7 +27,7 @@
                     
                     <div class="r-form-group">
                         <label>O que você está precisando?</label>
-                        <input type="text" name="titulo_pedido" placeholder="Ex: 5 Computadores para sala de aula, Mesas de escritório..." required>
+                        <input type="text" name="titulo" placeholder="Ex: Precisamos de 5 computadores..." class="input-class" required>
                     </div>
 
                     <div class="r-form-row">

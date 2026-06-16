@@ -168,7 +168,12 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                 </div>
 
             <?php elseif ($aba == 'mensagens'): ?>
+                <?php 
+                // Verifica se o usuário veio da tela de projetos clicando no botão "Ajudar"
+                $nome_contato = isset($_GET['nome_contato']) ? htmlspecialchars($_GET['nome_contato']) : 'ONG Vida Nova';
+                ?>
                 <div class="p-messages-wrapper">
+                    
                     <aside class="p-chat-sidebar">
                         <div class="p-chat-sidebar-header">
                             <h2 class="p-section-title-blue" style="margin: 0; font-size: 18px;">CONVERSAS</h2>
@@ -177,8 +182,8 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                             <div class="p-chat-user active">
                                 <div class="p-chat-avatar" style="background: #38bdf8; color: black;"><i class="fa-solid fa-hand-holding-heart"></i></div>
                                 <div class="p-chat-info">
-                                    <strong>ONG Vida Nova</strong>
-                                    <p>Olá! O kit chegou...</p>
+                                    <strong><?php echo $nome_contato; ?></strong>
+                                    <p>Olá! Gostaria de ajudar...</p>
                                 </div>
                             </div>
                         </div>
@@ -189,17 +194,26 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                             <div style="display: flex; align-items: center; gap: 15px;">
                                 <div class="p-chat-avatar-small" style="background: #38bdf8; color: black;"><i class="fa-solid fa-hand-holding-heart"></i></div>
                                 <div>
-                                    <strong style="color: white; font-size: 16px; display: block;">ONG Vida Nova</strong>
+                                    <strong style="color: white; font-size: 16px; display: block;"><?php echo $nome_contato; ?></strong>
                                     <span style="color: #4ade80; font-size: 12px;">Online agora</span>
                                 </div>
                             </div>
                         </header>
+
                         <div class="p-chat-messages">
-                            <div class="msg received">
-                                <p>Olá! Gostaria de confirmar se o equipamento já foi enviado?</p>
-                                <span>14:20</span>
-                            </div>
+                            <?php if(isset($_GET['nome_contato'])): ?>
+                                <div class="msg sent">
+                                    <p>Olá! Vi o seu projeto na plataforma e gostaria de ajudar com uma doação. Como podemos combinar?</p>
+                                    <span>Agora mesmo</span>
+                                </div>
+                            <?php else: ?>
+                                <div class="msg received">
+                                    <p>Olá! Gostaria de confirmar se o equipamento já foi enviado?</p>
+                                    <span>14:20</span>
+                                </div>
+                            <?php endif; ?>
                         </div>
+
                         <footer class="p-chat-input-area">
                             <div class="input-wrapper">
                                 <i class="fa-solid fa-paperclip attach-icon"></i>
