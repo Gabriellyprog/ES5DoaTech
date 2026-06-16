@@ -73,7 +73,9 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
             
             <?php if ($aba == 'perfil'): ?>
                 <div class="p-top-hero">
-                    <div class="p-hero-circle"></div>
+                    <div class="p-top-hero">
+                    <div class="p-hero-circle" style="background-image: url('uploads/<?php echo !empty($dados_usuario['foto']) ? $dados_usuario['foto'] : 'default.png'; ?>'); background-size: cover; background-position: center;"></div>
+                </div>
                 </div>
 
                 <div class="perfil-card-box">

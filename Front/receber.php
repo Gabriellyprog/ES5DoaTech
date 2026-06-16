@@ -23,7 +23,7 @@
             <section class="receber-card receber-form-section">
                 <h2 class="txt-blue" style="margin-bottom: 25px; font-size: 20px;">Detalhes da Necessidade</h2>
                 
-                <form action="#" method="POST" enctype="multipart/form-data" class="r-form">
+                <form action="processar_pedido.php" method="POST" enctype="multipart/form-data" class="receber-form">
                     
                     <div class="r-form-group">
                         <label>O que você está precisando?</label>

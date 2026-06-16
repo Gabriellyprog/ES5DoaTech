@@ -1,7 +1,24 @@
 <?php
-// Garante que a sessão está iniciada para sabermos se o usuário está logado
+// Garante que a sessão está iniciada
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
+}
+
+// Lógica para puxar a foto do usuário logado para o cabeçalho
+$foto_header = 'uploads/default.png'; // Caminho padrão caso não tenha foto
+if (isset($_SESSION['usuario_id'])) {
+    include_once('conexao.php'); // Usa include_once para não dar conflito com outras páginas
+    $stmt_header = $conn->prepare("SELECT foto FROM usuarios WHERE id = ?");
+    $stmt_header->bind_param("i", $_SESSION['usuario_id']);
+    $stmt_header->execute();
+    $resultado_header = $stmt_header->get_result();
+    
+    if ($resultado_header->num_rows > 0) {
+        $usuario_header = $resultado_header->fetch_assoc();
+        if (!empty($usuario_header['foto'])) {
+            $foto_header = 'uploads/' . $usuario_header['foto'];
+        }
+    }
 }
 ?>
 <header class="main-header">
@@ -24,8 +41,7 @@ if (session_status() === PHP_SESSION_NONE) {
         <?php if(isset($_SESSION['usuario_id'])): ?>
             <div class="user-dropdown-container" style="position: relative;">
                 
-                <div id="profile-btn" style="width: 40px; height: 40px; border-radius: 50%; background: #161b22; display: flex; justify-content: center; align-items: center; cursor: pointer; border: 2px solid #38bdf8; transition: 0.3s;">
-                    <i class="fa-solid fa-user" style="color: #38bdf8;"></i>
+                <div id="profile-btn" style="width: 40px; height: 40px; border-radius: 50%; background-image: url('<?php echo $foto_header; ?>'); background-size: cover; background-position: center; cursor: pointer; border: 2px solid #38bdf8; transition: 0.3s;">
                 </div>
 
                 <div id="dropdown-menu" style="display: none; position: absolute; top: 55px; right: 0; background: #11141d; border: 1px solid #1e293b; border-radius: 12px; width: 160px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 9999; overflow: hidden;">
@@ -60,9 +76,8 @@ if (session_status() === PHP_SESSION_NONE) {
         const dropdownMenu = document.getElementById('dropdown-menu');
 
         if (profileBtn && dropdownMenu) {
-            // Abre/Fecha o menu ao clicar na foto
             profileBtn.addEventListener('click', function(event) {
-                event.stopPropagation(); // Evita que o clique feche a janela na mesma hora
+                event.stopPropagation(); 
                 if (dropdownMenu.style.display === 'none' || dropdownMenu.style.display === '') {
                     dropdownMenu.style.display = 'block';
                 } else {
@@ -70,7 +85,6 @@ if (session_status() === PHP_SESSION_NONE) {
                 }
             });
 
-            // Fecha o menu se o usuário clicar em qualquer outro lugar da tela
             document.addEventListener('click', function(event) {
                 if (!profileBtn.contains(event.target) && !dropdownMenu.contains(event.target)) {
                     dropdownMenu.style.display = 'none';

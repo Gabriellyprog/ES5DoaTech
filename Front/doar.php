@@ -23,7 +23,7 @@
             <section class="doar-card doar-form-section">
                 <h2 class="txt-blue" style="margin-bottom: 25px; font-size: 20px;">Detalhes do Item</h2>
                 
-                <form action="#" method="POST" enctype="multipart/form-data" class="d-form">
+                <form action="processar_doacao.php" method="POST" enctype="multipart/form-data" class="doar-form">
                     
                     <div class="d-form-group">
                         <label>O que você está doando?</label>
@@ -63,7 +63,7 @@
                             <i class="fa-solid fa-cloud-arrow-up"></i>
                             <span>Clique ou arraste imagens aqui</span>
                             <small>Formatos aceitos: JPG, PNG (Max 5MB)</small>
-                            <input type="file" name="fotos" accept="image/*" multiple>
+                            <input type="file" name="foto_item" accept="image/*" multiple>
                         </div>
                     </div>
 
