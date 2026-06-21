@@ -9,17 +9,45 @@ if (!isset($_SESSION['usuario_id'])) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $cor_primaria = $_POST['cor_primaria'];
-    $cor_secundaria = $_POST['cor_secundaria'];
-    $cor_fundo = $_POST['cor_fundo'];
-    $fonte_principal = $_POST['fonte_principal'];
+   $cor_primaria = $_POST['cor_primaria'];
+$cor_secundaria = $_POST['cor_secundaria'];
+$cor_fundo = $_POST['cor_fundo'];
+$cor_card = $_POST['cor_card'];
+$cor_texto = $_POST['cor_texto'];
+$cor_texto_secundario = $_POST['cor_texto_secundario'];
+$cor_borda = $_POST['cor_borda'];
+$cor_input = $_POST['cor_input'];
+$cor_header = $_POST['cor_header'];
+$fonte_principal = $_POST['fonte_principal'];
 
-    // 1. Atualiza as Cores e Fonte primeiro
-    $sql = "UPDATE configuracoes SET cor_primaria = ?, cor_secundaria = ?, cor_fundo = ?, fonte_principal = ? WHERE id = 1";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssss", $cor_primaria, $cor_secundaria, $cor_fundo, $fonte_principal);
-    $stmt->execute();
+$sql = "UPDATE configuracoes 
+        SET cor_primaria = ?, 
+            cor_secundaria = ?, 
+            cor_fundo = ?, 
+            cor_card = ?, 
+            cor_texto = ?, 
+            cor_texto_secundario = ?, 
+            cor_borda = ?, 
+            cor_input = ?, 
+            cor_header = ?, 
+            fonte_principal = ? 
+        WHERE id = 1";
 
+$stmt = $conn->prepare($sql);
+$stmt->bind_param(
+    "ssssssssss",
+    $cor_primaria,
+    $cor_secundaria,
+    $cor_fundo,
+    $cor_card,
+    $cor_texto,
+    $cor_texto_secundario,
+    $cor_borda,
+    $cor_input,
+    $cor_header,
+    $fonte_principal
+);
+$stmt->execute();
     $pasta_destino = "uploads/";
     if (!is_dir($pasta_destino)) { mkdir($pasta_destino, 0777, true); }
 

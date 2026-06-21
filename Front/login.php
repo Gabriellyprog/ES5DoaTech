@@ -6,6 +6,7 @@
     <title>DoaTech - Login</title>
     <link rel="stylesheet" href="auth.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <?php include('tema.php'); ?>
 </head>
 <body class="auth-body">
 

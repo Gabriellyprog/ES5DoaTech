@@ -37,6 +37,7 @@ if (!empty($busca)) {
     <link rel="stylesheet" href="home.css">
     <link rel="stylesheet" href="projetos.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <?php include('tema.php'); ?>
 </head>
 <body class="proj-body">
 

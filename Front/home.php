@@ -59,6 +59,7 @@ $vidas_transformadas = $total_dispositivos * 4; // Exemplo: cada doação impact
     <title>DoaTech - Home</title>
     <link rel="stylesheet" href="home.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <?php include('tema.php'); ?>
 </head>
 <body>
 

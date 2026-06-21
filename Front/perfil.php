@@ -20,6 +20,8 @@ $query_count = $conn->prepare("SELECT COUNT(*) as total FROM doacoes WHERE id_us
 $query_count->bind_param("i", $id_usuario);
 $query_count->execute();
 $total_doacoes = $query_count->get_result()->fetch_assoc()['total'];
+$query_config = $conn->query("SELECT * FROM configuracoes WHERE id = 1");
+$config = $query_config->fetch_assoc();
 
 // Lógica para definir qual aba está ativa na navegação
 $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
@@ -32,6 +34,7 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
     <link rel="stylesheet" href="home.css">
     <link rel="stylesheet" href="perfil.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <?php include('tema.php'); ?>
 </head>
 <body class="perfil-body-layout">
 
@@ -352,22 +355,63 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                         </div>
 
                         <h3 class="p-section-title-green" style="font-size: 16px; margin-bottom: 15px;">Paleta de Cores Global</h3>
-                        <div class="p-form-grid" style="margin-bottom: 30px;">
-                            <div class="p-form-group">
-                                <label>Cor Primária</label>
-                                <div style="display: flex; gap: 15px; align-items: center; background: #05070a; border: 1px solid #1e293b; padding: 5px 15px; border-radius: 12px;">
-                                    <input type="color" name="cor_primaria" value="#4ade80" style="width: 40px; height: 40px; border: none; background: none; cursor: pointer;">
-                                    <span style="color: white; font-family: monospace;">#4ade80</span>
-                                </div>
-                            </div>
-                            <div class="p-form-group">
-                                <label>Cor Secundária</label>
-                                <div style="display: flex; gap: 15px; align-items: center; background: #05070a; border: 1px solid #1e293b; padding: 5px 15px; border-radius: 12px;">
-                                    <input type="color" name="cor_secundaria" value="#38bdf8" style="width: 40px; height: 40px; border: none; background: none; cursor: pointer;">
-                                    <span style="color: white; font-family: monospace;">#38bdf8</span>
-                                </div>
-                            </div>
-                        </div>
+
+<div class="p-form-grid" style="margin-bottom: 30px;">
+    <div class="p-form-group">
+        <label>Cor Primária</label>
+        <input type="color" name="cor_primaria" value="<?php echo htmlspecialchars($config['cor_primaria']); ?>" class="p-form-input">
+    </div>
+
+    <div class="p-form-group">
+        <label>Cor Secundária</label>
+        <input type="color" name="cor_secundaria" value="<?php echo htmlspecialchars($config['cor_secundaria']); ?>" class="p-form-input">
+    </div>
+
+    <div class="p-form-group">
+        <label>Cor de Fundo</label>
+        <input type="color" name="cor_fundo" value="<?php echo htmlspecialchars($config['cor_fundo']); ?>" class="p-form-input">
+    </div>
+
+    <div class="p-form-group">
+        <label>Cor dos Cards</label>
+        <input type="color" name="cor_card" value="<?php echo htmlspecialchars($config['cor_card']); ?>" class="p-form-input">
+    </div>
+
+    <div class="p-form-group">
+        <label>Cor do Texto Principal</label>
+        <input type="color" name="cor_texto" value="<?php echo htmlspecialchars($config['cor_texto']); ?>" class="p-form-input">
+    </div>
+
+    <div class="p-form-group">
+        <label>Cor do Texto Secundário</label>
+        <input type="color" name="cor_texto_secundario" value="<?php echo htmlspecialchars($config['cor_texto_secundario']); ?>" class="p-form-input">
+    </div>
+
+    <div class="p-form-group">
+        <label>Cor das Bordas</label>
+        <input type="color" name="cor_borda" value="<?php echo htmlspecialchars($config['cor_borda']); ?>" class="p-form-input">
+    </div>
+
+    <div class="p-form-group">
+        <label>Cor dos Inputs</label>
+        <input type="color" name="cor_input" value="<?php echo htmlspecialchars($config['cor_input']); ?>" class="p-form-input">
+    </div>
+
+    <div class="p-form-group">
+        <label>Cor do Header</label>
+        <input type="color" name="cor_header" value="<?php echo htmlspecialchars($config['cor_header']); ?>" class="p-form-input">
+    </div>
+
+    <div class="p-form-group">
+        <label>Fonte Principal</label>
+        <select name="fonte_principal" class="p-form-input">
+            <option value="Inter" <?php echo ($config['fonte_principal'] == 'Inter') ? 'selected' : ''; ?>>Inter</option>
+            <option value="Arial" <?php echo ($config['fonte_principal'] == 'Arial') ? 'selected' : ''; ?>>Arial</option>
+            <option value="Poppins" <?php echo ($config['fonte_principal'] == 'Poppins') ? 'selected' : ''; ?>>Poppins</option>
+            <option value="Roboto" <?php echo ($config['fonte_principal'] == 'Roboto') ? 'selected' : ''; ?>>Roboto</option>
+        </select>
+    </div>
+</div>
 
                         <div style="margin-top: 40px; display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid #1e293b; padding-top: 25px;">
                             
