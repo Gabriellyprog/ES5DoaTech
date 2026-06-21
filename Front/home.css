@@ -1,5 +1,62 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
+.js-expand-image {
+    cursor: zoom-in;
+}
+
+.js-expand-image:focus {
+    outline: 2px solid var(--neon-blue);
+    outline-offset: 3px;
+}
+
+.image-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.86);
+}
+
+.image-lightbox.active {
+    display: flex;
+}
+
+.image-lightbox-img {
+    max-width: min(92vw, 1100px);
+    max-height: 86vh;
+    object-fit: contain;
+    border-radius: 8px;
+    background: #05070a;
+    box-shadow: 0 20px 80px rgba(0, 0, 0, 0.6);
+}
+
+.image-lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    background: rgba(5, 7, 10, 0.85);
+    color: #ffffff;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.image-lightbox-close:hover {
+    border-color: var(--neon-blue);
+    color: var(--neon-blue);
+}
+
+body.lightbox-open {
+    overflow: hidden;
+}
+
 :root {
     --bg-dark: #0b0e14;
     --card-bg: #161b22;
@@ -129,6 +186,34 @@ h2 {
     flex-direction: column;
     justify-content: space-between;
     width: 100%;
+}
+
+.banner-doacao-content {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    margin-bottom: 18px;
+}
+
+.banner-doacao-photo-wrap {
+    width: 120px;
+    height: 92px;
+    flex: 0 0 120px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(5, 7, 10, 0.55);
+    overflow: hidden;
+}
+
+.banner-doacao-photo {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+}
+
+.banner-doacao-info {
+    min-width: 0;
 }
 
 .btn-ajudar {

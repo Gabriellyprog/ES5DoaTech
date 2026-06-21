@@ -127,5 +127,62 @@ if (isset($_SESSION['usuario_id']) && isset($conn)) {
                 }
             });
         }
+
+        const expandableImages = document.querySelectorAll('.js-expand-image');
+
+        if (expandableImages.length > 0) {
+            const lightbox = document.createElement('div');
+            lightbox.className = 'image-lightbox';
+            lightbox.innerHTML = `
+                <button type="button" class="image-lightbox-close" aria-label="Fechar imagem ampliada">&times;</button>
+                <img class="image-lightbox-img" src="" alt="Imagem ampliada">
+            `;
+            document.body.appendChild(lightbox);
+
+            const lightboxImg = lightbox.querySelector('.image-lightbox-img');
+            const closeButton = lightbox.querySelector('.image-lightbox-close');
+
+            function openLightbox(image) {
+                lightboxImg.src = image.getAttribute('src');
+                lightboxImg.alt = image.getAttribute('alt') || 'Imagem ampliada';
+                lightbox.classList.add('active');
+                document.body.classList.add('lightbox-open');
+                closeButton.focus();
+            }
+
+            function closeLightbox() {
+                lightbox.classList.remove('active');
+                document.body.classList.remove('lightbox-open');
+                lightboxImg.src = '';
+            }
+
+            expandableImages.forEach(function(image) {
+                image.setAttribute('tabindex', '0');
+                image.setAttribute('title', 'Clique para ampliar');
+
+                image.addEventListener('click', function() {
+                    openLightbox(image);
+                });
+
+                image.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        openLightbox(image);
+                    }
+                });
+            });
+
+            lightbox.addEventListener('click', function(event) {
+                if (event.target === lightbox || event.target === closeButton) {
+                    closeLightbox();
+                }
+            });
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && lightbox.classList.contains('active')) {
+                    closeLightbox();
+                }
+            });
+        }
     });
 </script>

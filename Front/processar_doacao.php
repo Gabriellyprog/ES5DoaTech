@@ -22,15 +22,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Lógica para upload da foto do item (se houver)
     if (isset($_FILES['foto_item']) && $_FILES['foto_item']['error'] == 0) {
-        $pasta_destino = "uploads/";
-        if (!is_dir($pasta_destino)) { mkdir($pasta_destino, 0777, true); }
+      $pasta_destino = __DIR__ . "/uploads/";
 
-        $extensao = pathinfo($_FILES['foto_item']['name'], PATHINFO_EXTENSION);
-        $nome_foto = "item_" . time() . "_" . rand(100, 999) . "." . $extensao;
-        
-        move_uploaded_file($_FILES['foto_item']['tmp_name'], $pasta_destino . $nome_foto);
+if (!is_dir($pasta_destino)) {
+    mkdir($pasta_destino, 0777, true);
+}
     }
+$extensao = strtolower(pathinfo($_FILES['foto_item']['name'], PATHINFO_EXTENSION));
+$nome_foto = "item_" . time() . "_" . rand(100, 999) . "." . $extensao;
+$caminho_final = $pasta_destino . $nome_foto;
 
+if (!move_uploaded_file($_FILES['foto_item']['tmp_name'], $caminho_final)) {
+    $nome_foto = null;
+}
     // Inserir no banco de dados
     $sql = "INSERT INTO doacoes (id_usuario, titulo, categoria, estado_conservacao, descricao, fotos, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);

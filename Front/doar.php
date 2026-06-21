@@ -44,7 +44,7 @@
                         </div>
                         <div class="d-form-group">
                             <label>Estado de Conservação</label>
-                            <select name="estado" required>
+                           <select name="estado_conservacao" required>
                                 <option value="" disabled selected>Selecione...</option>
                                 <option value="novo">Novo / Sem uso</option>
                                 <option value="bom">Usado - Em bom estado</option>
@@ -64,7 +64,7 @@
                             <i class="fa-solid fa-cloud-arrow-up"></i>
                             <span>Clique ou arraste imagens aqui</span>
                             <small>Formatos aceitos: JPG, PNG (Max 5MB)</small>
-                            <input type="file" name="foto_item" accept="image/*" multiple>
+                          <input type="file" name="foto_item" accept="image/*">
                         </div>
                     </div>
 

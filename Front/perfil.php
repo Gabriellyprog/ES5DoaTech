@@ -136,7 +136,7 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                     <div class="p-donation-list">
                         <?php
                         // Puxa as doações reais feitas por este usuário do banco de dados
-                       $query_doacoes = $conn->prepare("SELECT id, titulo, status, DATE_FORMAT(data_cadastro, '%d %b %Y') as data_formatada FROM doacoes WHERE id_usuario = ? ORDER BY id DESC");
+                      $query_doacoes = $conn->prepare("SELECT id, titulo, status, fotos, DATE_FORMAT(data_cadastro, '%d %b %Y') as data_formatada FROM doacoes WHERE id_usuario = ? ORDER BY id DESC"); 
                         $query_doacoes->bind_param("i", $id_usuario);
                         $query_doacoes->execute();
                         $lista_doacoes = $query_doacoes->get_result();
@@ -150,7 +150,11 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                         ?>
                             <div class="p-donation-row">
                                 <div class="p-donation-info">
-                                    <span class="p-donation-icon">📦</span>
+                                   <?php if (!empty($doacao['fotos'])): ?>
+    <img class="p-donation-photo js-expand-image" src="uploads/<?php echo htmlspecialchars($doacao['fotos']); ?>" alt="Foto da doação">
+<?php else: ?>
+    <span class="p-donation-icon"><i class="fa-solid fa-box"></i></span>
+<?php endif; ?>
                                     <div>
                                         <strong class="p-donation-item"><?php echo htmlspecialchars($doacao['titulo']); ?></strong>
                                         <span class="p-donation-dest">Plataforma DoaTech</span>

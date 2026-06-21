@@ -82,8 +82,18 @@ $vidas_transformadas = $total_dispositivos * 4; // Exemplo: cada doação impact
 
         <div class="banner-urgencia">
             <?php if ($doacao_destaque): ?>
-                <h3 style="font-size: 22px; line-height: 1.4;"><?php echo htmlspecialchars($doacao_destaque['titulo']); ?></h3>
-                <p style="color: #ffffff; font-size: 14px; margin-bottom: 15px; opacity: 0.9;">Ofertado por: <?php echo htmlspecialchars($doacao_destaque['doador_nome']); ?></p>
+                <div class="banner-doacao-content">
+                    <?php if (!empty($doacao_destaque['fotos'])): ?>
+                        <div class="banner-doacao-photo-wrap">
+                            <img class="banner-doacao-photo js-expand-image" src="uploads/<?php echo htmlspecialchars($doacao_destaque['fotos']); ?>" alt="Foto da doação">
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="banner-doacao-info">
+                        <h3 style="font-size: 22px; line-height: 1.4;"><?php echo htmlspecialchars($doacao_destaque['titulo']); ?></h3>
+                        <p style="color: #ffffff; font-size: 14px; margin-bottom: 15px; opacity: 0.9;">Ofertado por: <?php echo htmlspecialchars($doacao_destaque['doador_nome']); ?></p>
+                    </div>
+                </div>
                 <div style="display: flex; justify-content: space-between; align-items: flex-end;">
                     <span style="color: #4ade80; font-weight: bold; font-size: 13px;">ITEM DISPONÍVEL</span>
                     <a href="perfil.php?aba=mensagens&contato_id=<?php echo $doacao_destaque['id_usuario']; ?>&nome_contato=<?php echo urlencode($doacao_destaque['doador_nome']); ?>" class="btn-link-ajudar">Quero este item</a>
