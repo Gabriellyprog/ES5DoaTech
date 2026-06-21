@@ -136,7 +136,7 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                     <div class="p-donation-list">
                         <?php
                         // Puxa as doações reais feitas por este usuário do banco de dados
-                        $query_doacoes = $conn->prepare("SELECT titulo, status, DATE_FORMAT(data_cadastro, '%d %b %Y') as data_formatada FROM doacoes WHERE id_usuario = ? ORDER BY id DESC");
+                       $query_doacoes = $conn->prepare("SELECT id, titulo, status, DATE_FORMAT(data_cadastro, '%d %b %Y') as data_formatada FROM doacoes WHERE id_usuario = ? ORDER BY id DESC");
                         $query_doacoes->bind_param("i", $id_usuario);
                         $query_doacoes->execute();
                         $lista_doacoes = $query_doacoes->get_result();
@@ -159,6 +159,13 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                                 <div class="p-donation-status-container">
                                     <span class="p-status-badge <?php echo $badge_class; ?>"><?php echo strtoupper($doacao['status']); ?></span>
                                     <p class="p-donation-date"><?php echo $doacao['data_formatada']; ?></p>
+                                   <form class="p-delete-doacao-form" action="excluir_doacao.php" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir esta doação?');">
+    <input type="hidden" name="id_doacao" value="<?php echo (int)$doacao['id']; ?>">
+    <button type="submit" class="p-btn-delete-doacao">
+        <i class="fa-solid fa-trash"></i>
+        <span>Excluir</span>
+    </button>
+</form>
                                 </div>
                             </div>
                         <?php 
