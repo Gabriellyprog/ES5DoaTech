@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once __DIR__ . '/flash.php';
 include 'conexao.php';
 
 // Proteção básica: aqui num sistema real você checaria se o usuário é "Admin"
@@ -69,10 +70,6 @@ $stmt->execute();
         }
     }
 
-    echo "<script>
-            alert('Identidade Visual atualizada com sucesso! As mudanças já estão ativas.');
-            window.location.href = 'perfil.php?aba=gerenciamento';
-          </script>";
-    exit();
+    redirect_with_flash('perfil.php?aba=gerenciamento', 'Identidade visual atualizada com sucesso! As mudanças já estão ativas.', 'success');
 }
 ?>

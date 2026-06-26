@@ -88,6 +88,133 @@
     border-color: #ef4444;
     transform: translateY(-1px);
 }
+
+.p-confirm-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 99998;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.p-confirm-modal.active {
+    display: flex;
+}
+
+.p-confirm-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 7, 10, 0.78);
+    backdrop-filter: blur(10px);
+}
+
+.p-confirm-dialog {
+    position: relative;
+    width: min(430px, 100%);
+    background: linear-gradient(180deg, #161b22 0%, #11141d 100%);
+    border: 1px solid rgba(56, 189, 248, 0.26);
+    border-radius: 18px;
+    padding: 28px;
+    text-align: center;
+    box-shadow: 0 26px 80px rgba(0, 0, 0, 0.62);
+    outline: none;
+}
+
+.p-confirm-icon {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 14px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    background: linear-gradient(135deg, #ef4444, #38bdf8);
+    box-shadow: 0 14px 34px rgba(239, 68, 68, 0.22);
+}
+
+.p-confirm-kicker {
+    display: inline-flex;
+    margin-bottom: 8px;
+    color: #4ade80;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.p-confirm-dialog h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 24px;
+}
+
+.p-confirm-dialog p {
+    margin: 12px 0 0;
+    color: #cbd5e1;
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.p-confirm-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.p-confirm-cancel,
+.p-confirm-accept {
+    min-height: 44px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-weight: 800;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: 0.2s ease;
+}
+
+.p-confirm-cancel {
+    color: #cbd5e1;
+    background: rgba(148, 163, 184, 0.08);
+    border-color: rgba(148, 163, 184, 0.24);
+}
+
+.p-confirm-accept {
+    color: #ffffff;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    box-shadow: 0 12px 26px rgba(239, 68, 68, 0.22);
+}
+
+.p-confirm-cancel:hover {
+    color: #ffffff;
+    border-color: #38bdf8;
+}
+
+.p-confirm-accept:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 30px rgba(239, 68, 68, 0.28);
+}
+
+body.confirm-modal-open {
+    overflow: hidden;
+}
+
+@media (max-width: 520px) {
+    .p-confirm-dialog {
+        padding: 24px 20px;
+    }
+
+    .p-confirm-actions {
+        grid-template-columns: 1fr;
+    }
+}
 /* ========================================== */
 /* 6. MENSAGENS (SISTEMA DE CHAT BLINDADO)    */
 /* ========================================== */
@@ -126,6 +253,8 @@
     padding: 20px 25px !important;
     border-bottom: 1px solid #1e293b !important;
     cursor: pointer !important;
+    text-decoration: none !important;
+    position: relative;
 }
 
 .p-chat-user:hover { background: rgba(255, 255, 255, 0.03) !important; }
@@ -146,6 +275,21 @@
 .p-chat-info { display: flex !important; flex-direction: column !important; overflow: hidden !important; }
 .p-chat-info strong { display: block; font-size: 14px; color: white; margin-bottom: 4px; }
 .p-chat-info p { font-size: 12px; color: #94a3b8; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.p-chat-unread {
+    min-width: 22px;
+    height: 22px;
+    padding: 0 7px;
+    border-radius: 999px;
+    background: #4ade80;
+    color: #05070a;
+    font-size: 11px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+}
 
 /* Janela do Chat Principal */
 .p-chat-window {
@@ -320,6 +464,10 @@
     gap: 8px;
 }
 
+.p-form-group-full {
+    grid-column: 1 / -1;
+}
+
 .p-form-group label {
     color: #94a3b8;
     font-size: 13px;
@@ -442,4 +590,13 @@
     background: #05070a;
     border-radius: 6px;
     border: 1px solid #30363d;
+}
+
+textarea.p-form-input {
+    resize: vertical;
+    min-height: 110px;
+}
+
+.p-ong-fields {
+    display: none;
 }

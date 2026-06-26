@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/flash.php'; ?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -14,8 +15,9 @@
     <div class="auth-glow-2"></div>
 
     <div id="alerta-popup" class="neon-popup">Mensagem de erro aqui</div>
+    <?php render_flash_message(); ?>
 
-    <div class="auth-container" style="max-width: 450px;">
+    <div class="auth-container cadastro-container">
         <div class="auth-box">
             
             <div class="auth-logo" style="margin-bottom: 30px;">
@@ -25,15 +27,61 @@
             </div>
 
             <form id="form-cadastro" action="processar_cadastro.php" method="POST" class="auth-form">
+                <div class="account-type-options" role="group" aria-label="Tipo de cadastro">
+                    <label class="account-type-card active" data-account-card="usuario">
+                        <input type="radio" name="tipo_usuario" value="usuario" checked>
+                        <span><i class="fa-solid fa-user"></i></span>
+                        <div class="account-type-copy">
+                        <strong>Usuário</strong>
+                        <small>Quero doar ou pedir ajuda.</small>
+                        </div>
+                    </label>
+
+                    <label class="account-type-card" data-account-card="ong">
+                        <input type="radio" name="tipo_usuario" value="ong">
+                        <span><i class="fa-solid fa-hand-holding-heart"></i></span>
+                        <div class="account-type-copy">
+                        <strong>Cadastrar ONG</strong>
+                        <small>Represento um projeto social.</small>
+                        </div>
+                    </label>
+                </div>
                 
                 <div class="input-group">
-                    <input type="text" name="nome" placeholder="Nome Completo" required>
+                    <input type="text" id="nome-cadastro" name="nome" placeholder="Nome Completo" required>
                     <i class="fa-regular fa-address-card input-icon"></i>
                 </div>
 
                 <div class="input-group">
                     <input type="email" name="email" placeholder="E-mail" required>
                     <i class="fa-regular fa-envelope input-icon"></i>
+                </div>
+
+                <div id="ong-fields" class="ong-fields">
+                    <div class="input-group">
+                        <input type="text" name="telefone" placeholder="Telefone para contato">
+                        <i class="fa-solid fa-phone input-icon"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" name="localizacao" placeholder="Cidade / Estado">
+                        <i class="fa-solid fa-location-dot input-icon"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" name="documento" placeholder="CNPJ da ONG">
+                        <i class="fa-regular fa-id-card input-icon"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" name="area_atuacao" placeholder="Área de atuação">
+                        <i class="fa-solid fa-seedling input-icon"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <textarea name="descricao_ong" placeholder="Conte rapidamente o que a ONG faz"></textarea>
+                        <i class="fa-solid fa-align-left input-icon textarea-icon"></i>
+                    </div>
                 </div>
 
                 <div class="input-group">
@@ -67,6 +115,39 @@
                 popup.classList.remove("show");
             }, 4000);
         }
+
+        const accountCards = document.querySelectorAll('.account-type-card');
+        const accountRadios = document.querySelectorAll('input[name="tipo_usuario"]');
+        const ongFields = document.getElementById('ong-fields');
+        const nomeCadastro = document.getElementById('nome-cadastro');
+
+        function atualizarTipoCadastro() {
+            const tipoSelecionado = document.querySelector('input[name="tipo_usuario"]:checked').value;
+            accountCards.forEach(function(card) {
+                card.classList.toggle('active', card.dataset.accountCard === tipoSelecionado);
+            });
+
+            const camposOng = ongFields.querySelectorAll('input, textarea');
+            if (tipoSelecionado === 'ong') {
+                ongFields.classList.add('visible');
+                nomeCadastro.placeholder = 'Nome da ONG';
+                camposOng.forEach(function(campo) {
+                    campo.required = true;
+                });
+            } else {
+                ongFields.classList.remove('visible');
+                nomeCadastro.placeholder = 'Nome Completo';
+                camposOng.forEach(function(campo) {
+                    campo.required = false;
+                });
+            }
+        }
+
+        accountRadios.forEach(function(radio) {
+            radio.addEventListener('change', atualizarTipoCadastro);
+        });
+
+        atualizarTipoCadastro();
 
         document.getElementById('form-cadastro').addEventListener('submit', function(event) {
             const senha = document.getElementById('senha-cadastro').value;

@@ -79,6 +79,26 @@ body.proj-body {
     cursor: pointer;
 }
 
+.proj-filter-btn {
+    background: linear-gradient(90deg, #38bdf8, #4ade80);
+    border: none;
+    color: #05070a;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.2s ease;
+}
+
+.proj-filter-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(56, 189, 248, 0.2);
+}
+
 /* Grid de Cards */
 .proj-grid {
     display: grid;

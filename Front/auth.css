@@ -20,8 +20,10 @@ body.auth-body {
     align-items: center;
     min-height: 100vh;
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     color: white;
+    padding: 40px 0;
 }
 
 /* Efeito de "Vinheta" (Escurece as bordas da tela para focar no centro) */
@@ -66,6 +68,14 @@ body.auth-body::before {
     position: relative; /* Garante que fique acima dos efeitos de fundo */
 }
 
+.cadastro-container {
+    max-width: 620px;
+}
+
+.cadastro-container .auth-box {
+    padding: 42px 44px;
+}
+
 /* 3. O QUADRO (CARD) DE DESTAQUE COM EFEITO VIDRO */
 .auth-box {
     background-color: rgba(22, 27, 34, 0.7); /* Cinza levemente transparente */
@@ -96,13 +106,123 @@ body.auth-body::before {
 .auth-form { display: flex; flex-direction: column; gap: 20px; }
 .input-group { position: relative; width: 100%; }
 
+.account-type-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 4px;
+}
+
+.account-type-card {
+    position: relative;
+    border: 1px solid #1e293b;
+    background: #05070a;
+    border-radius: 14px;
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: 0.25s ease;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 92px;
+}
+
+.account-type-card > input[type="radio"] {
+    position: absolute !important;
+    opacity: 0 !important;
+    width: 1px !important;
+    height: 1px !important;
+    pointer-events: none !important;
+}
+
+.account-type-card span {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: rgba(56, 189, 248, 0.1);
+    color: #38bdf8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 42px;
+}
+
+.account-type-card span i {
+    font-size: 18px;
+}
+
+.account-type-card[data-account-card="ong"] span i {
+    font-size: 19px;
+}
+
+.account-type-copy {
+    min-width: 0;
+}
+
+.account-type-card strong {
+    color: #ffffff;
+    display: block;
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.account-type-card small {
+    color: #94a3b8;
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.account-type-card.active {
+    border-color: #38bdf8;
+    box-shadow: 0 0 18px rgba(56, 189, 248, 0.14);
+}
+
+.account-type-card.active span {
+    background: linear-gradient(135deg, #38bdf8, #4ade80);
+    color: #05070a;
+}
+
+.ong-fields {
+    display: none !important;
+    gap: 20px;
+    padding: 18px;
+    border: 1px solid rgba(74, 222, 128, 0.18);
+    border-radius: 16px;
+    background: rgba(74, 222, 128, 0.04);
+}
+
+.ong-fields.visible {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+}
+
+.ong-fields .input-group:last-child {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 640px) {
+    .cadastro-container {
+        max-width: 100%;
+    }
+
+    .cadastro-container .auth-box {
+        padding: 34px 24px;
+    }
+
+    .account-type-options,
+    .ong-fields.visible {
+        grid-template-columns: 1fr;
+    }
+}
+
 .input-icon {
     position: absolute; left: 18px; top: 50%;
     transform: translateY(-50%);
     color: #64748b; font-size: 16px; transition: 0.3s;
 }
 
-.input-group input {
+.input-group input,
+.input-group textarea {
     width: 100%;
     background-color: #05070a; /* Fundo mais escuro para contrastar com o quadro cinza */
     border: 1px solid #1e293b;
@@ -111,15 +231,29 @@ body.auth-body::before {
     color: white; font-size: 15px; outline: none; transition: 0.3s ease;
 }
 
-.input-group input::placeholder { color: #475569; }
+.input-group textarea {
+    min-height: 110px;
+    resize: vertical;
+}
 
-.input-group input:focus {
+.textarea-icon {
+    top: 22px;
+    transform: none;
+}
+
+.input-group input::placeholder,
+.input-group textarea::placeholder { color: #475569; }
+
+.input-group input:focus,
+.input-group textarea:focus {
     border-color: #38bdf8;
     box-shadow: 0 0 12px rgba(56, 189, 248, 0.15);
 }
 
 .input-group input:focus + .input-icon,
-.input-group input:not(:placeholder-shown) + .input-icon {
+.input-group input:not(:placeholder-shown) + .input-icon,
+.input-group textarea:focus + .input-icon,
+.input-group textarea:not(:placeholder-shown) + .input-icon {
     color: #38bdf8;
 }
 

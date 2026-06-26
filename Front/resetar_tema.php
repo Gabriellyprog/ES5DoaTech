@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once __DIR__ . '/flash.php';
 include 'conexao.php';
 
 if (!isset($_SESSION['usuario_id'])) {
@@ -23,15 +24,9 @@ $sql = "UPDATE configuracoes SET
         fonte_principal = 'Inter' 
         WHERE id = 1";
 if ($conn->query($sql) === TRUE) {
-    echo "<script>
-            alert('Tema restaurado para os padrões de fábrica com sucesso!');
-            window.location.href = 'perfil.php?aba=gerenciamento';
-          </script>";
+    redirect_with_flash('perfil.php?aba=gerenciamento', 'Tema restaurado para os padrões de fábrica com sucesso!', 'success');
 } else {
-    echo "<script>
-            alert('Erro ao restaurar o tema. Tente novamente.');
-            window.history.back();
-          </script>";
+    redirect_with_flash('perfil.php?aba=gerenciamento', 'Erro ao restaurar o tema. Tente novamente.', 'error');
 }
 
 $conn->close();

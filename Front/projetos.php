@@ -4,18 +4,42 @@ include 'conexao.php';
 
 // Verifica se veio alguma palavra chave de busca pela URL (vindo da Home ou digitado no filtro)
 $busca = isset($_GET['busca']) ? trim($_GET['busca']) : '';
+$categoria_filtro = isset($_GET['categoria']) ? trim($_GET['categoria']) : '';
 
-if (!empty($busca)) {
+if (!empty($busca) && (empty($categoria_filtro) || $categoria_filtro === 'todos')) {
     // Se houver uma busca, filtra os pedidos pelo título do item ou nome da categoria
     $sql = "SELECT p.*, u.nome AS ong_nome, u.localizacao 
             FROM pedidos p 
             JOIN usuarios u ON p.id_usuario = u.id 
-            WHERE p.status = 'Aberto' AND (p.titulo LIKE ? OR p.categoria LIKE ?)
+            WHERE p.status = 'Aberto' AND (p.titulo LIKE ? OR p.categoria LIKE ? OR u.nome LIKE ? OR u.localizacao LIKE ?)
             ORDER BY p.data_cadastro DESC";
             
     $stmt = $conn->prepare($sql);
     $termo = "%" . $busca . "%";
-    $stmt->bind_param("ss", $termo, $termo);
+    $stmt->bind_param("ssss", $termo, $termo, $termo, $termo);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+} elseif (!empty($busca) && !empty($categoria_filtro) && $categoria_filtro !== 'todos') {
+    $sql = "SELECT p.*, u.nome AS ong_nome, u.localizacao
+            FROM pedidos p
+            JOIN usuarios u ON p.id_usuario = u.id
+            WHERE p.status = 'Aberto' AND p.categoria = ? AND (p.titulo LIKE ? OR p.categoria LIKE ? OR u.nome LIKE ? OR u.localizacao LIKE ?)
+            ORDER BY p.data_cadastro DESC";
+
+    $stmt = $conn->prepare($sql);
+    $termo = "%" . $busca . "%";
+    $stmt->bind_param("sssss", $categoria_filtro, $termo, $termo, $termo, $termo);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+} elseif (!empty($categoria_filtro) && $categoria_filtro !== 'todos') {
+    $sql = "SELECT p.*, u.nome AS ong_nome, u.localizacao
+            FROM pedidos p
+            JOIN usuarios u ON p.id_usuario = u.id
+            WHERE p.status = 'Aberto' AND p.categoria = ?
+            ORDER BY p.data_cadastro DESC";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $categoria_filtro);
     $stmt->execute();
     $resultado = $stmt->get_result();
 } else {
@@ -51,18 +75,21 @@ if (!empty($busca)) {
                 <p>Encontre a causa ideal ou acompanhe os pedidos da sua região.</p>
             </div>
 
-            <div class="proj-filters">
+            <form class="proj-filters" method="GET" action="projetos.php">
                 <div class="proj-search-box">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" placeholder="Buscar por ONG, item ou cidade...">
+                    <input type="text" name="busca" value="<?php echo htmlspecialchars($busca); ?>" placeholder="Buscar por ONG, item ou cidade...">
                 </div>
-                <select class="proj-select">
+                <select class="proj-select" name="categoria">
                     <option value="todos">Todas as Categorias</option>
-                    <option value="informatica">Informática</option>
-                    <option value="ferramentas">Ferramentas</option>
-                    <option value="moveis">Móveis</option>
+                    <option value="informatica" <?php echo ($categoria_filtro === 'informatica') ? 'selected' : ''; ?>>InformÃ¡tica</option>
+                    <option value="ferramentas" <?php echo ($categoria_filtro === 'ferramentas') ? 'selected' : ''; ?>>Ferramentas</option>
+                    <option value="moveis" <?php echo ($categoria_filtro === 'moveis') ? 'selected' : ''; ?>>MÃ³veis</option>
+                    <option value="material_escolar" <?php echo ($categoria_filtro === 'material_escolar') ? 'selected' : ''; ?>>Material Escolar</option>
+                    <option value="outros" <?php echo ($categoria_filtro === 'outros') ? 'selected' : ''; ?>>Outros</option>
                 </select>
-            </div>
+                <button class="proj-filter-btn" type="submit"><i class="fa-solid fa-filter"></i> Filtrar</button>
+            </form>
         </div>
 
         <div class="proj-grid">
@@ -83,10 +110,10 @@ if (!empty($busca)) {
                     $icone = 'fa-box-open';
                     $cor_icone = '#38bdf8';
                     $cat = strtolower($projeto['categoria']);
-                    if (strpos($cat, 'inform') !== false) { $icone = 'fa-computer'; $cor_icone = '#38bdf8'; }
-                    elseif (strpos($cat, 'ferramenta') !== false) { $icone = 'fa-toolbox'; $cor_icone = '#94a3b8'; }
+                    if (strpos($cat, 'inform') !== false) { $icone = 'fa-desktop'; $cor_icone = '#38bdf8'; }
+                    elseif (strpos($cat, 'ferramenta') !== false) { $icone = 'fa-screwdriver-wrench'; $cor_icone = '#94a3b8'; }
                     elseif (strpos($cat, 'móvei') !== false || strpos($cat, 'movei') !== false) { $icone = 'fa-chair'; $cor_icone = '#4ade80'; }
-                    elseif (strpos($cat, 'escolar') !== false) { $icone = 'fa-book'; $cor_icone = '#facc15'; }
+                    elseif (strpos($cat, 'escolar') !== false) { $icone = 'fa-book-open'; $cor_icone = '#facc15'; }
                 ?>
                 
                 <div class="proj-card">
@@ -99,7 +126,7 @@ if (!empty($busca)) {
                     <h3 class="proj-title"><?php echo htmlspecialchars($projeto['titulo']); ?></h3>
                     
                     <p class="proj-ong">
-                        <i class="fa-solid fa-building-ngo"></i> 
+                        <i class="fa-solid fa-hand-holding-heart"></i>
                         <?php echo htmlspecialchars($projeto['ong_nome']); ?> - <?php echo !empty($projeto['localizacao']) ? htmlspecialchars($projeto['localizacao']) : 'Local não informado'; ?>
                     </p>
                     

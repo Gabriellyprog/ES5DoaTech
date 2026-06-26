@@ -29,7 +29,7 @@
                     <p>Doadores físicos ou empresas cadastram equipamentos que não usam mais (computadores, monitores, peças), detalhando seu estado real de conservação.</p>
                 </div>
                 <div class="sobre-card">
-                    <div class="icon-wrapper blue-glow"><i class="fa-solid fa-tower-cell"></i></div>
+                    <div class="icon-wrapper blue-glow"><i class="fa-solid fa-earth-americas"></i></div>
                     <h3>2. Conexão</h3>
                     <p>ONGs, escolas e projetos sociais publicam suas necessidades. Nosso sistema atua como um mural inteligente, conectando a demanda à oferta local.</p>
                 </div>

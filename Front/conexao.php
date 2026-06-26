@@ -1,18 +1,16 @@
 <?php
-// conexao.php
 $servidor = "localhost";
-$usuario = "root"; // Padrão do XAMPP
-$senha = ""; // Padrão do XAMPP geralmente é vazio
+$usuario = "root";
+$senha = "";
 $banco = "doatech_db";
 
-// Cria a conexão
+mysqli_report(MYSQLI_REPORT_OFF);
+
 $conn = new mysqli($servidor, $usuario, $senha, $banco);
 
-// Verifica a conexão
 if ($conn->connect_error) {
-    die("Falha na conexão com o Banco de Dados: " . $conn->connect_error);
+    die("Nao foi possivel conectar ao banco de dados agora. Tente novamente em alguns instantes.");
 }
 
-// Define o padrão de caracteres para evitar erros de acentuação (ç, ã, etc)
 $conn->set_charset("utf8");
 ?>

@@ -165,15 +165,19 @@ $vidas_transformadas = $total_dispositivos * 4; // Exemplo: cada doação impact
                     if(stripos($pedido['categoria'], 'inform') !== false || stripos($pedido['titulo'], 'computador') !== false) $icone_pedido = '💻';
                     if(stripos($pedido['categoria'], 'ferramenta') !== false) $icone_pedido = '🔧';
                     if(stripos($pedido['categoria'], 'escolar') !== false || stripos($pedido['titulo'], 'livro') !== false) $icone_pedido = '📘';
+                    $icone_pedido = 'fa-hand-holding-heart';
+                    if(stripos($pedido['categoria'], 'inform') !== false || stripos($pedido['titulo'], 'computador') !== false || stripos($pedido['titulo'], 'monitor') !== false) $icone_pedido = 'fa-desktop';
+                    if(stripos($pedido['categoria'], 'ferramenta') !== false) $icone_pedido = 'fa-screwdriver-wrench';
+                    if(stripos($pedido['categoria'], 'escolar') !== false || stripos($pedido['titulo'], 'livro') !== false) $icone_pedido = 'fa-book-open';
                 ?>
                     <div class="item-card">
-                        <div class="item-icon"><?php echo $icone_pedido; ?></div>
+                        <div class="item-icon"><i class="fa-solid <?php echo $icone_pedido; ?>"></i></div>
                         <div class="item-info">
                             <strong>Projeto: <?php echo htmlspecialchars($pedido['titulo']); ?></strong>
                             <small>Necessidade de <?php echo htmlspecialchars($pedido['ong_nome']); ?> em <?php echo !empty($pedido['localizacao']) ? htmlspecialchars($pedido['localizacao']) : 'Local não informado'; ?></small>
                             <div class="btn-group">
                                 <a href="projetos.php?busca=<?php echo urlencode($pedido['titulo']); ?>" class="btn-green" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Ajudar Projeto</a>
-                                <button class="btn-outline">Ver Detalhes</button>
+                                <a href="projetos.php?busca=<?php echo urlencode($pedido['titulo']); ?>" class="btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Ver Detalhes</a>
                             </div>
                         </div>
                     </div>

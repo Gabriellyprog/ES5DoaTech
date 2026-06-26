@@ -10,7 +10,7 @@ include('conexao.php');
 
 // 1. Busca os dados atualizados do usuário logado
 $id_usuario = $_SESSION['usuario_id'];
-$query_user = $conn->prepare("SELECT nome, email, telefone, localizacao, foto FROM usuarios WHERE id = ?");
+$query_user = $conn->prepare("SELECT nome, email, telefone, documento, localizacao, tipo_usuario, area_atuacao, descricao_ong, foto FROM usuarios WHERE id = ?");
 $query_user->bind_param("i", $id_usuario);
 $query_user->execute();
 $dados_usuario = $query_user->get_result()->fetch_assoc();
@@ -20,6 +20,10 @@ $query_count = $conn->prepare("SELECT COUNT(*) as total FROM doacoes WHERE id_us
 $query_count->bind_param("i", $id_usuario);
 $query_count->execute();
 $total_doacoes = $query_count->get_result()->fetch_assoc()['total'];
+$query_count_pedidos = $conn->prepare("SELECT COUNT(*) as total FROM pedidos WHERE id_usuario = ?");
+$query_count_pedidos->bind_param("i", $id_usuario);
+$query_count_pedidos->execute();
+$total_pedidos = $query_count_pedidos->get_result()->fetch_assoc()['total'];
 $query_config = $conn->query("SELECT * FROM configuracoes WHERE id = 1");
 $config = $query_config->fetch_assoc();
 
@@ -49,8 +53,8 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                     <?php endif; ?>
                 </div>
                 <h3><?php echo htmlspecialchars($dados_usuario['nome']); ?></h3>
-                <p class="p-status">Doador Ativo</p>
-                <p class="p-status-sub">(Status)</p>
+                <p class="p-status"><?php echo ($dados_usuario['tipo_usuario'] === 'ong') ? 'ONG Cadastrada' : 'Doador Ativo'; ?></p>
+                <p class="p-status-sub"><?php echo ($dados_usuario['tipo_usuario'] === 'ong') ? 'Conta institucional' : 'Conta pessoal'; ?></p>
             </div>
             
             <nav class="perfil-nav-menu">
@@ -95,8 +99,8 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                         </div>
                         <div class="p-v-line"></div>
                         <div class="p-stat-box">
-                            <span class="p-label">Pontuação de Impacto</span>
-                            <div class="p-impact-icon">💙</div>
+                            <span class="p-label">Pedidos Publicados</span>
+                            <p class="p-val-blue"><?php echo $total_pedidos; ?></p>
                         </div>
                     </div>
                 </div>
@@ -112,10 +116,30 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                             <label>Email</label>
                             <p><?php echo htmlspecialchars($dados_usuario['email']); ?></p>
                         </div>
+                        <div class="p-data-field">
+                            <label>Tipo de Conta</label>
+                            <p><?php echo ($dados_usuario['tipo_usuario'] === 'ong') ? 'ONG / Projeto Social' : 'Usuário Normal'; ?></p>
+                        </div>
+                        <?php if ($dados_usuario['tipo_usuario'] === 'ong'): ?>
+                            <div class="p-data-field">
+                                <label>Área de Atuação</label>
+                                <p><?php echo !empty($dados_usuario['area_atuacao']) ? htmlspecialchars($dados_usuario['area_atuacao']) : 'Não informada'; ?></p>
+                            </div>
+                            <div class="p-data-field">
+                                <label>Sobre a ONG</label>
+                                <p><?php echo !empty($dados_usuario['descricao_ong']) ? htmlspecialchars($dados_usuario['descricao_ong']) : 'Não informado'; ?></p>
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="perfil-card-box">
                         <h2 class="p-section-title-green">Dados de Contato</h2>
+                        <?php if ($dados_usuario['tipo_usuario'] === 'ong'): ?>
+                            <div class="p-data-field">
+                                <label>CNPJ</label>
+                                <p><?php echo !empty($dados_usuario['documento']) ? htmlspecialchars($dados_usuario['documento']) : 'Não informado'; ?></p>
+                            </div>
+                        <?php endif; ?>
                         <div class="p-data-field">
                             <label>Telefone</label>
                             <p><?php echo !empty($dados_usuario['telefone']) ? htmlspecialchars($dados_usuario['telefone']) : 'Não informado'; ?></p>
@@ -163,7 +187,7 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                                 <div class="p-donation-status-container">
                                     <span class="p-status-badge <?php echo $badge_class; ?>"><?php echo strtoupper($doacao['status']); ?></span>
                                     <p class="p-donation-date"><?php echo $doacao['data_formatada']; ?></p>
-                                   <form class="p-delete-doacao-form" action="excluir_doacao.php" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir esta doação?');">
+                                   <form class="p-delete-doacao-form js-confirm-form" action="excluir_doacao.php" method="POST" data-confirm-title="Excluir doa&ccedil;&atilde;o?" data-confirm-message="Essa a&ccedil;&atilde;o remove &quot;<?php echo htmlspecialchars($doacao['titulo'], ENT_QUOTES, 'UTF-8'); ?>&quot; do seu perfil. Voc&ecirc; poder&aacute; cadastrar novamente se precisar." data-confirm-label="Excluir doa&ccedil;&atilde;o" data-confirm-icon="fa-trash">
     <input type="hidden" name="id_doacao" value="<?php echo (int)$doacao['id']; ?>">
     <button type="submit" class="p-btn-delete-doacao">
         <i class="fa-solid fa-trash"></i>
@@ -190,6 +214,76 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                 $mensagens_chat = [];
                 if ($contato_id > 0) {
                     $meu_id = $_SESSION['usuario_id'];
+                    $sql_msg = "SELECT * FROM mensagens
+                                WHERE (id_remetente = ? AND id_destinatario = ?)
+                                   OR (id_remetente = ? AND id_destinatario = ?)
+                                ORDER BY data_envio ASC";
+                    $stmt_msg = $conn->prepare($sql_msg);
+                    $stmt_msg->bind_param("iiii", $meu_id, $contato_id, $contato_id, $meu_id);
+                    $stmt_msg->execute();
+                    $resultado_msg = $stmt_msg->get_result();
+                    while ($row = $resultado_msg->fetch_assoc()) {
+                        $mensagens_chat[] = $row;
+                    }
+                }
+
+                $meu_id = (int) $_SESSION['usuario_id'];
+                $conversas = [];
+                $sql_conversas = "SELECT u.id, u.nome, u.foto, u.tipo_usuario,
+                                         MAX(m.data_envio) AS ultima_data,
+                                         SUBSTRING_INDEX(GROUP_CONCAT(m.mensagem ORDER BY m.data_envio DESC SEPARATOR '||'), '||', 1) AS ultima_mensagem,
+                                         SUM(CASE WHEN m.id_destinatario = ? AND m.lida = 0 THEN 1 ELSE 0 END) AS nao_lidas
+                                  FROM mensagens m
+                                  JOIN usuarios u ON u.id = CASE WHEN m.id_remetente = ? THEN m.id_destinatario ELSE m.id_remetente END
+                                  WHERE m.id_remetente = ? OR m.id_destinatario = ?
+                                  GROUP BY u.id, u.nome, u.foto, u.tipo_usuario
+                                  ORDER BY ultima_data DESC";
+                $stmt_conversas = $conn->prepare($sql_conversas);
+                $stmt_conversas->bind_param("iiii", $meu_id, $meu_id, $meu_id, $meu_id);
+                $stmt_conversas->execute();
+                $resultado_conversas = $stmt_conversas->get_result();
+                while ($conversa = $resultado_conversas->fetch_assoc()) {
+                    $conversas[(int) $conversa['id']] = $conversa;
+                }
+                $stmt_conversas->close();
+
+                if ($contato_id === 0 && count($conversas) > 0) {
+                    $primeira_conversa = reset($conversas);
+                    $contato_id = (int) $primeira_conversa['id'];
+                }
+
+                $contato_atual = null;
+                if ($contato_id > 0) {
+                    $stmt_contato = $conn->prepare("SELECT id, nome, foto, tipo_usuario FROM usuarios WHERE id = ?");
+                    $stmt_contato->bind_param("i", $contato_id);
+                    $stmt_contato->execute();
+                    $contato_atual = $stmt_contato->get_result()->fetch_assoc();
+                    $stmt_contato->close();
+
+                    if ($contato_atual && !isset($conversas[$contato_id])) {
+                        $conversas[$contato_id] = [
+                            'id' => $contato_atual['id'],
+                            'nome' => $contato_atual['nome'],
+                            'foto' => $contato_atual['foto'],
+                            'tipo_usuario' => $contato_atual['tipo_usuario'],
+                            'ultima_data' => null,
+                            'ultima_mensagem' => 'Nova conversa',
+                            'nao_lidas' => 0
+                        ];
+                    }
+                }
+
+                $nome_contato = $contato_atual ? htmlspecialchars($contato_atual['nome']) : 'Selecione uma conversa';
+                $mensagens_chat = [];
+                if ($contato_id > 0 && $contato_atual) {
+                    $stmt_ler = $conn->prepare("UPDATE mensagens SET lida = 1 WHERE id_remetente = ? AND id_destinatario = ?");
+                    $stmt_ler->bind_param("ii", $contato_id, $meu_id);
+                    $stmt_ler->execute();
+                    $stmt_ler->close();
+                    if (isset($conversas[$contato_id])) {
+                        $conversas[$contato_id]['nao_lidas'] = 0;
+                    }
+
                     $sql_msg = "SELECT * FROM mensagens 
                                 WHERE (id_remetente = ? AND id_destinatario = ?) 
                                    OR (id_remetente = ? AND id_destinatario = ?) 
@@ -201,6 +295,7 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                     while ($row = $resultado_msg->fetch_assoc()) {
                         $mensagens_chat[] = $row;
                     }
+                    $stmt_msg->close();
                 }
                 ?>
                 
@@ -211,7 +306,30 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                             <h2 class="p-section-title-blue" style="margin: 0; font-size: 18px;">CONVERSAS</h2>
                         </div>
                         <div class="p-chat-list">
-                            <?php if ($contato_id > 0): ?>
+                            <?php if (count($conversas) > 0): ?>
+                                <?php foreach ($conversas as $conversa):
+                                    $conversa_id = (int) $conversa['id'];
+                                    $ativa = ($conversa_id === $contato_id) ? 'active' : '';
+                                    $nao_lidas = (int) $conversa['nao_lidas'];
+                                    $icone_conversa = ($conversa['tipo_usuario'] === 'ong') ? 'fa-hand-holding-heart' : 'fa-user';
+                                ?>
+                                    <a href="perfil.php?aba=mensagens&contato_id=<?php echo $conversa_id; ?>" class="p-chat-user <?php echo $ativa; ?>">
+                                        <div class="p-chat-avatar" style="background: #38bdf8; color: black;">
+                                            <i class="fa-solid <?php echo $icone_conversa; ?>"></i>
+                                        </div>
+                                        <div class="p-chat-info">
+                                            <strong><?php echo htmlspecialchars($conversa['nome']); ?></strong>
+                                            <p><?php echo htmlspecialchars($conversa['ultima_mensagem'] ?: 'Nova conversa'); ?></p>
+                                        </div>
+                                        <?php if ($nao_lidas > 0): ?>
+                                            <span class="p-chat-unread"><?php echo $nao_lidas > 9 ? '9+' : $nao_lidas; ?></span>
+                                        <?php endif; ?>
+                                    </a>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <p style="color: #94a3b8; padding: 20px; font-size: 14px;">Inicie um chat atraves da pagina de Projetos.</p>
+                            <?php endif; ?>
+                            <?php if (false): ?>
                                 <div class="p-chat-user active">
                                     <div class="p-chat-avatar" style="background: #38bdf8; color: black;"><i class="fa-solid fa-hand-holding-heart"></i></div>
                                     <div class="p-chat-info">
@@ -219,7 +337,7 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                                         <p>Conversa ativa</p>
                                     </div>
                                 </div>
-                            <?php else: ?>
+                            <?php elseif (false): ?>
                                 <p style="color: #94a3b8; padding: 20px; font-size: 14px;">Inicie um chat através da página de Projetos.</p>
                             <?php endif; ?>
                         </div>
@@ -228,7 +346,7 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                     <section class="p-chat-window">
                         <header class="p-chat-header">
                             <div style="display: flex; align-items: center; gap: 15px;">
-                                <div class="p-chat-avatar-small" style="background: #38bdf8; color: black;"><i class="fa-solid fa-hand-holding-heart"></i></div>
+                                <div class="p-chat-avatar-small" style="background: #38bdf8; color: black;"><i class="fa-solid <?php echo ($contato_atual && $contato_atual['tipo_usuario'] === 'ong') ? 'fa-hand-holding-heart' : 'fa-user'; ?>"></i></div>
                                 <div>
                                     <strong style="color: white; font-size: 16px; display: block;"><?php echo $nome_contato; ?></strong>
                                     <?php if ($contato_id > 0): ?>
@@ -315,12 +433,37 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                                 <input type="email" name="email" value="<?php echo htmlspecialchars($dados_usuario['email']); ?>" class="p-form-input" required>
                             </div>
                             <div class="p-form-group">
+                                <label>Tipo de Conta</label>
+                                <select name="tipo_usuario" id="config-tipo-usuario" class="p-form-input">
+                                    <option value="usuario" <?php echo ($dados_usuario['tipo_usuario'] === 'usuario') ? 'selected' : ''; ?>>Usuário Normal</option>
+                                    <option value="ong" <?php echo ($dados_usuario['tipo_usuario'] === 'ong') ? 'selected' : ''; ?>>ONG / Projeto Social</option>
+                                </select>
+                            </div>
+                            <div class="p-form-group">
                                 <label>Telefone</label>
                                 <input type="text" name="telefone" value="<?php echo htmlspecialchars($dados_usuario['telefone']); ?>" class="p-form-input">
                             </div>
                             <div class="p-form-group">
                                 <label>Localização</label>
                                 <input type="text" name="localizacao" value="<?php echo htmlspecialchars($dados_usuario['localizacao']); ?>" class="p-form-input">
+                            </div>
+                        </div>
+
+                        <div id="config-ong-fields" class="p-ong-fields">
+                            <h3 class="p-section-title-green" style="margin-top: 30px; font-size: 16px;">Dados da ONG</h3>
+                            <div class="p-form-grid">
+                                <div class="p-form-group">
+                                    <label>CNPJ</label>
+                                    <input type="text" name="documento" value="<?php echo htmlspecialchars($dados_usuario['documento']); ?>" class="p-form-input">
+                                </div>
+                                <div class="p-form-group">
+                                    <label>Área de Atuação</label>
+                                    <input type="text" name="area_atuacao" value="<?php echo htmlspecialchars($dados_usuario['area_atuacao']); ?>" class="p-form-input">
+                                </div>
+                                <div class="p-form-group p-form-group-full">
+                                    <label>Descrição da ONG</label>
+                                    <textarea name="descricao_ong" class="p-form-input" rows="4"><?php echo htmlspecialchars($dados_usuario['descricao_ong']); ?></textarea>
+                                </div>
                             </div>
                         </div>
 
@@ -426,7 +569,7 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
 
                         <div style="margin-top: 40px; display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid #1e293b; padding-top: 25px;">
                             
-                            <a href="resetar_tema.php" onclick="return confirm('Tem certeza que deseja restaurar o tema padrão? Isso apagará a logo atual e voltará as cores originais.');" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; padding: 12px 25px; border-radius: 8px; color: #ef4444; border: 1px solid #ef4444; background: transparent; font-weight: bold; cursor: pointer; transition: 0.3s;">
+                            <a href="resetar_tema.php" class="js-confirm-link" data-confirm-title="Restaurar tema padr&atilde;o?" data-confirm-message="Isso apagar&aacute; a logo atual e voltar&aacute; as cores originais do DoaTech." data-confirm-label="Restaurar tema" data-confirm-icon="fa-rotate-left" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; padding: 12px 25px; border-radius: 8px; color: #ef4444; border: 1px solid #ef4444; background: transparent; font-weight: bold; cursor: pointer; transition: 0.3s;">
                                 <i class="fa-solid fa-rotate-left" style="margin-right: 8px;"></i> Voltar de Fábrica
                             </a>
 
@@ -439,6 +582,25 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
             <?php endif; ?>
 
         </main>
+    </div>
+
+    <div class="p-confirm-modal" id="perfil-confirm-modal" aria-hidden="true">
+        <div class="p-confirm-backdrop" data-confirm-close></div>
+        <section class="p-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="perfil-confirm-title" aria-describedby="perfil-confirm-message" tabindex="-1">
+            <div class="p-confirm-icon">
+                <i id="perfil-confirm-modal-icon" class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <span class="p-confirm-kicker">Confirma&ccedil;&atilde;o</span>
+            <h2 id="perfil-confirm-title">Confirmar a&ccedil;&atilde;o?</h2>
+            <p id="perfil-confirm-message">Deseja continuar?</p>
+            <div class="p-confirm-actions">
+                <button type="button" class="p-confirm-cancel" data-confirm-close>Cancelar</button>
+                <button type="button" class="p-confirm-accept" id="perfil-confirm-accept">
+                    <i class="fa-solid fa-check"></i>
+                    <span>Confirmar</span>
+                </button>
+            </div>
+        </section>
     </div>
 
     <script>
@@ -457,6 +619,110 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'perfil';
                     }
                 });
             }
+
+            const tipoUsuarioConfig = document.getElementById('config-tipo-usuario');
+            const configOngFields = document.getElementById('config-ong-fields');
+            function atualizarCamposOngConfig() {
+                if (!tipoUsuarioConfig || !configOngFields) return;
+                configOngFields.style.display = tipoUsuarioConfig.value === 'ong' ? 'block' : 'none';
+            }
+            if (tipoUsuarioConfig) {
+                tipoUsuarioConfig.addEventListener('change', atualizarCamposOngConfig);
+                atualizarCamposOngConfig();
+            }
+
+            const confirmModal = document.getElementById('perfil-confirm-modal');
+            const confirmDialog = confirmModal ? confirmModal.querySelector('.p-confirm-dialog') : null;
+            const confirmTitle = document.getElementById('perfil-confirm-title');
+            const confirmMessage = document.getElementById('perfil-confirm-message');
+            const confirmAccept = document.getElementById('perfil-confirm-accept');
+            const confirmAcceptIcon = confirmAccept ? confirmAccept.querySelector('i') : null;
+            const confirmAcceptLabel = confirmAccept ? confirmAccept.querySelector('span') : null;
+            const confirmModalIcon = document.getElementById('perfil-confirm-modal-icon');
+            let pendingConfirmAction = null;
+
+            function setConfirmIcon(iconClass) {
+                const safeIcon = (iconClass || 'fa-check').replace(/[^a-zA-Z0-9_-]/g, '');
+                if (confirmAcceptIcon) confirmAcceptIcon.className = `fa-solid ${safeIcon}`;
+                if (confirmModalIcon) confirmModalIcon.className = `fa-solid ${safeIcon}`;
+            }
+
+            function openConfirmModal(options) {
+                if (!confirmModal || !confirmTitle || !confirmMessage || !confirmAccept) return false;
+
+                pendingConfirmAction = options.onConfirm;
+                confirmTitle.textContent = options.title || 'Confirmar acao?';
+                confirmMessage.textContent = options.message || 'Deseja continuar?';
+                if (confirmAcceptLabel) confirmAcceptLabel.textContent = options.label || 'Confirmar';
+                setConfirmIcon(options.icon);
+
+                confirmModal.classList.add('active');
+                confirmModal.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('confirm-modal-open');
+                setTimeout(function() {
+                    if (confirmDialog) confirmDialog.focus();
+                }, 30);
+
+                return true;
+            }
+
+            function closeConfirmModal() {
+                if (!confirmModal) return;
+                confirmModal.classList.remove('active');
+                confirmModal.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('confirm-modal-open');
+                pendingConfirmAction = null;
+            }
+
+            document.querySelectorAll('.js-confirm-form').forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const opened = openConfirmModal({
+                        title: form.dataset.confirmTitle,
+                        message: form.dataset.confirmMessage,
+                        label: form.dataset.confirmLabel,
+                        icon: form.dataset.confirmIcon,
+                        onConfirm: function() {
+                            form.submit();
+                        }
+                    });
+                    if (!opened) form.submit();
+                });
+            });
+
+            document.querySelectorAll('.js-confirm-link').forEach(function(link) {
+                link.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    const opened = openConfirmModal({
+                        title: link.dataset.confirmTitle,
+                        message: link.dataset.confirmMessage,
+                        label: link.dataset.confirmLabel,
+                        icon: link.dataset.confirmIcon,
+                        onConfirm: function() {
+                            window.location.href = link.href;
+                        }
+                    });
+                    if (!opened) window.location.href = link.href;
+                });
+            });
+
+            document.querySelectorAll('[data-confirm-close]').forEach(function(button) {
+                button.addEventListener('click', closeConfirmModal);
+            });
+
+            if (confirmAccept) {
+                confirmAccept.addEventListener('click', function() {
+                    const action = pendingConfirmAction;
+                    closeConfirmModal();
+                    if (typeof action === 'function') action();
+                });
+            }
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && confirmModal && confirmModal.classList.contains('active')) {
+                    closeConfirmModal();
+                }
+            });
         });
     </script>
 </body>

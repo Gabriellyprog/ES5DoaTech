@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/flash.php'; ?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -14,6 +15,7 @@
     <div class="auth-glow-2"></div>
 
     <div id="alerta-popup" class="neon-popup">Mensagem de erro aqui</div>
+    <?php render_flash_message(); ?>
 
     <div class="auth-container">
         <div class="auth-box">
